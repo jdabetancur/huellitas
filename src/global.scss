@@ -63,7 +63,8 @@ ion-segment {
 
 ion-segment-button {
   --indicator-color: var(--ion-color-primary);
-  --color-checked: var(--ion-color-primary-contrast);
+  --color-checked: var(--ion-color-primary-shade);
+  --background-checked: var(--hu-primario-suave);
   --border-radius: 12px;
   min-height: 44px;
   text-transform: none;

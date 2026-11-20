@@ -31,7 +31,10 @@
   p {
     color: inherit;
     opacity: 0.9;
-    text-transform: capitalize;
+
+    &::first-letter {
+      text-transform: uppercase;
+    }
   }
 
   .cuando {

@@ -1,7 +1,10 @@
 .mes {
   margin: 4px 20px 0;
   color: var(--ion-color-medium);
-  text-transform: capitalize;
+
+  &::first-letter {
+    text-transform: uppercase;
+  }
 }
 
 .fecha {

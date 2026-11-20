@@ -9,7 +9,13 @@ import { FotoService } from '../../services/foto.service';
   selector: 'app-avatar',
   imports: [IonIcon],
   template: `
-    <div class="avatar" [class]="especie()" [style.width.px]="tamano()" [style.height.px]="tamano()">
+    <div
+      class="avatar"
+      [class]="especie()"
+      [style.width.px]="tamano()"
+      [style.height.px]="tamano()"
+      [style.font-size.px]="tamano() * 0.45"
+    >
       @if (src(); as url) {
         <img [src]="url" [alt]="'Foto de ' + nombre()" />
       } @else {
@@ -42,9 +48,6 @@ import { FotoService } from '../../services/foto.service';
       width: 100%;
       height: 100%;
       object-fit: cover;
-    }
-    ion-icon {
-      font-size: 45%;
     }
   `,
 })

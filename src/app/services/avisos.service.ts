@@ -8,7 +8,7 @@ export class AvisosService {
   private readonly toasts = inject(ToastController);
 
   async mensaje(texto: string, color: 'dark' | 'danger' | 'success' = 'dark'): Promise<void> {
-    const toast = await this.toasts.create({ message: texto, duration: 2500, position: 'bottom', color });
+    const toast = await this.toasts.create({ message: texto, duration: 2500, position: 'top', color });
     await toast.present();
   }
 

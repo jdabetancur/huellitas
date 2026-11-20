@@ -33,7 +33,7 @@ type Formato = 'pdf' | 'csv';
           <ion-item [class.activa]="formato() === 'pdf'">
             <ion-icon slot="start" name="document-text-outline" color="primary" aria-hidden="true"></ion-icon>
             <ion-radio value="pdf" justify="space-between">
-              <ion-label>
+              <ion-label class="ion-text-wrap">
                 <h3>PDF para el veterinario</h3>
                 <p>Historial de salud listo para imprimir o compartir</p>
               </ion-label>
@@ -42,7 +42,7 @@ type Formato = 'pdf' | 'csv';
           <ion-item [class.activa]="formato() === 'csv'">
             <ion-icon slot="start" name="download-outline" color="primary" aria-hidden="true"></ion-icon>
             <ion-radio value="csv" justify="space-between">
-              <ion-label>
+              <ion-label class="ion-text-wrap">
                 <h3>Respaldo en CSV</h3>
                 <p>Perfil completo para guardarlo o pasarlo a otro celular</p>
               </ion-label>
@@ -83,7 +83,7 @@ type Formato = 'pdf' | 'csv';
   `,
 })
 export class ExportarModalComponent {
-  private readonly modal = inject(ModalController);
+  private readonly controladorModal = inject(ModalController);
   private readonly avisos = inject(AvisosService);
 
   /** Lo asigna ModalController con componentProps. */
@@ -101,6 +101,6 @@ export class ExportarModalComponent {
   }
 
   cerrar(): Promise<boolean> {
-    return this.modal.dismiss();
+    return this.controladorModal.dismiss();
   }
 }
