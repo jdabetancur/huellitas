@@ -53,7 +53,7 @@ Busca `TODO(RFxx)` en el código para ver exactamente qué falta de cada requeri
 
 ## Requerimientos por pantalla
 
-Igual que la sección 6 del documento de diseño. Un punto (●) indica que el requerimiento se cumple o se inicia en esa pantalla.
+Un punto (●) indica que el requerimiento se cumple o se inicia en esa pantalla.
 
 | RF | P1 Mis mascotas | P2 Perfil | P3 Nuevo evento | P4 Nueva/editar mascota | P5 Recordatorios | P6 Exportar |
 |---|---|---|---|---|---|---|
@@ -123,27 +123,6 @@ Recordatorio { fecha, repetirCadaMeses?, notificacionId? }
 | `historialPeso(mascotaId)`, `pesoActual(mascotaId)` | Controles de peso (RF13) |
 
 Reglas de validación: campos obligatorios; la fecha de nacimiento no puede ser futura; un evento ya realizado (vacuna aplicada, desparasitación, peso) no puede tener fecha futura; las citas y los eventos con «Recordarme» sí; el peso debe ser mayor que 0. Antes de eliminar siempre se pide confirmación.
-
-## Prueba de notificaciones
-
-El tutor pidió probar pronto las notificaciones de los refuerzos de vacunas porque son el corazón de la app. El documento de la Entrega 2 reporta estos 6 casos, así que **todos deben pasar en un celular real antes de entregar**.
-
-Prepara el celular: instala el APK de **desarrollo** (`npm run android:sync:dev` + `.\gradlew assembleDebug`) y abre la app. En el perfil de cualquier mascota aparece la tarjeta «Solo desarrollo» con el botón **Probar notificación en 2 min** (solo existe cuando `environment.production` es `false`).
-
-| # | Caso | Cómo probarlo en el celular | Responsable | Estado |
-|---|---|---|---|---|
-| 1 | Al crear el primer recordatorio en Android 13+, la app pide el permiso de notificaciones y continúa al aceptarlo | Instala la app limpia → Perfil → «+ Evento» → activa «Recordarme» (o toca «Probar notificación en 2 min»). Debe salir el diálogo de Android; acepta y el interruptor queda activo | Base | Listo para probar |
-| 2 | Una vacuna con refuerzo y «Recordarme» activo deja la notificación programada para el día anterior al refuerzo a las 9:00 a. m. | Registra una vacuna con «Repetir: cada año» y «Recordarme». Verifica con `adb shell dumpsys alarm \| findstr huellitas` o temporalmente con un refuerzo para mañana | Compañero 1 (RF07, [#2](../../issues/2)) | Pendiente: `NotificacionesService.programarRecordatorio` |
-| 3 | Un recordatorio de prueba a 2 minutos llega con la app cerrada | Toca «Probar notificación en 2 min», cierra la app (deslízala de recientes) y espera | Base | Listo para probar |
-| 4 | Un recordatorio programado llega después de reiniciar el celular | Toca «Probar notificación en 2 min» y reinicia el celular de inmediato. Desbloquéalo y espera a que llegue | Base | Listo para probar |
-| 5 | Tocar la notificación abre el perfil de la mascota correspondiente | Cuando llegue la notificación del caso 3 o 4, tócala: debe abrir el perfil de esa mascota | Base | Listo para probar |
-| 6 | Una desparasitación que se repite cada 3 meses programa automáticamente la siguiente al cumplirse la fecha | Registra una desparasitación «cada 3 meses» con «Recordarme»; al cumplirse la fecha debe quedar programada la siguiente | Compañero 1 (RF06, [#1](../../issues/1)) | Pendiente: `NotificacionesService.reprogramarRecurrentes` |
-
-Notas para que la prueba salga bien:
-
-- **Alarmas exactas:** en Android 12 o superior el sistema puede negar las alarmas exactas. Si es así, el botón de prueba lo avisa y ofrece abrir *Alarmas y recordatorios*; actívalo para Huellitas. Sin ese permiso la notificación puede llegar unos minutos tarde.
-- **Ahorro de batería:** algunas marcas (Xiaomi, Huawei, Oppo, Samsung con optimización agresiva) bloquean las alarmas de apps cerradas. Si el caso 3 o 4 falla, pon Huellitas en «Sin restricciones» en *Batería*.
-- **Reinicio:** el plugin `@capacitor/local-notifications` registra un receptor de `BOOT_COMPLETED` que vuelve a programar las notificaciones pendientes; el manifiesto declara `RECEIVE_BOOT_COMPLETED`.
 
 ## Reglas de trabajo
 
