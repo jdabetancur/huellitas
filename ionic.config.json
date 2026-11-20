@@ -1,0 +1,7 @@
+{
+  "name": "huellitas",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
