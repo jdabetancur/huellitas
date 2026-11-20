@@ -1,4 +1,4 @@
-# Huellitas 🐾
+# Huellitas
 
 Carné digital de las mascotas del hogar. El dueño registra sus mascotas y sus eventos de salud (vacunas, desparasitaciones, citas veterinarias y peso), recibe recordatorios y guarda la foto del carné. Todo se guarda en el celular: no hay servidor ni cuenta (app *standalone*).
 
@@ -33,21 +33,21 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 
 ## Estado de los requerimientos (Entrega 2)
 
-| RF | Requerimiento | Estado | Responsable | Issue |
-|---|---|---|---|---|
-| RF01 | Registrar mascota con nombre, especie, raza, sexo, fecha de nacimiento y foto | ✅ Implementado | Base | — |
-| RF02 | Listar, editar y eliminar mascotas | ✅ Implementado | Base | — |
-| RF03 | Registrar eventos de salud (vacuna, desparasitación, cita, peso) con fecha y notas | ✅ Implementado | Base | — |
-| RF04 | Historial de salud ordenado por fecha | ✅ Implementado | Base | — |
-| RF13 | Registrar el peso y verlo como lista de controles | ✅ Implementado | Base | — |
-| RF05 | Calendario precargado según especie y edad | 🔧 Interfaz lista, falta la lógica | Compañero 2 | [#3](../../issues/3) |
-| RF06 | Recordatorios únicos o recurrentes | 🔧 Interfaz y datos listos, falta reprogramar | Compañero 1 | [#1](../../issues/1) |
-| RF07 | Notificación local el día anterior | 🔧 Servicio real listo, falta programar el aviso de cada evento | Compañero 1 | [#2](../../issues/2) |
-| RF08 | Próximos recordatorios de todas las mascotas | 🔧 Versión básica, falta completar | Compañero 2 | [#4](../../issues/4) |
-| RF10 | Foto del carné asociada a un evento | 🔧 Interfaz y FotoService listos, falta conectar | Compañero 3 | [#5](../../issues/5) |
-| RF09 | Jornada de vacunación con un toque | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
-| RF11 | Exportar historial en PDF | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
-| RF12 | Exportar e importar perfil en CSV | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
+| RF | Requerimiento | Estado | Issue |
+|---|---|---|---|
+| RF01 | Registrar mascota con nombre, especie, raza, sexo, fecha de nacimiento y foto | Implementado | — |
+| RF02 | Listar, editar y eliminar mascotas | Implementado | — |
+| RF03 | Registrar eventos de salud (vacuna, desparasitación, cita, peso) con fecha y notas | Implementado | — |
+| RF04 | Historial de salud ordenado por fecha | Implementado | — |
+| RF13 | Registrar el peso y verlo como lista de controles | Implementado | — |
+| RF05 | Calendario precargado según especie y edad | En desarrollo | [#3](../../issues/3) |
+| RF06 | Recordatorios únicos o recurrentes | En desarrollo | [#1](../../issues/1) |
+| RF07 | Notificación local el día anterior | En desarrollo | [#2](../../issues/2) |
+| RF08 | Próximos recordatorios de todas las mascotas | En desarrollo | [#4](../../issues/4) |
+| RF10 | Foto del carné asociada a un evento | En desarrollo | [#5](../../issues/5) |
+| RF09 | Jornada de vacunación con un toque | Entrega 3 | — |
+| RF11 | Exportar historial en PDF | Entrega 3 | — |
+| RF12 | Exportar e importar perfil en CSV | Entrega 3 | — |
 
 Busca `TODO(RFxx)` en el código para ver exactamente qué falta de cada requerimiento.
 
@@ -130,4 +130,4 @@ Reglas de validación: campos obligatorios; la fecha de nacimiento no puede ser 
 2. Commits pequeños con mensajes claros en español.
 3. **Pull Request a `main`**, con `npm run build` y `npm run lint` sin errores, y el issue enlazado (`Closes #n`).
 4. **Nadie sube directo a `main`.** Otro integrante revisa y aprueba el PR antes de fusionarlo.
-5. Si cambias el modelo de datos o un servicio compartido, avísalo en el PR: es el contrato de todo el equipo.
+5. Si cambias el modelo de datos o un servicio compartido, explícalo en el PR.

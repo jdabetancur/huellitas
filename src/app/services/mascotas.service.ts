@@ -16,7 +16,7 @@ export type DatosMascota = Omit<Mascota, 'id'>;
 export type DatosEvento = Omit<EventoSalud, 'id'>;
 
 /**
- * Fuente única de datos de la app (contrato con todo el equipo).
+ * Fuente única de datos de la app.
  * Guarda mascotas y eventos en el celular con Capacitor Preferences y expone el estado con signals:
  * cualquier `computed()` que lea `mascotas()` o `eventos()` se actualiza solo.
  */
