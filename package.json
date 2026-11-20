@@ -1,8 +1,8 @@
 {
   "name": "huellitas",
-  "version": "0.0.1",
-  "author": "Ionic Framework",
-  "homepage": "https://ionicframework.com/",
+  "version": "0.2.0",
+  "author": "José David Betancur Carmona <jdavid.9310@gmail.com>",
+  "homepage": "https://github.com/jdabetancur/huellitas",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -64,5 +64,5 @@
     "vitest": "^5.1.0"
   },
   "prettier": "@ionic/prettier-config",
-  "description": "An Ionic project"
+  "description": "Huellitas: carné digital de las mascotas del hogar (Ionic + Capacitor)"
 }
