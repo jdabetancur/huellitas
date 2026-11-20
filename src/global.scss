@@ -1,37 +1,157 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
+/* Estilos globales de Huellitas. */
 
 /* Core CSS required for Ionic components to work properly */
-@import "@ionic/angular/css/core.css";
+@import '@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
-@import "@ionic/angular/css/normalize.css";
-@import "@ionic/angular/css/structure.css";
-@import "@ionic/angular/css/typography.css";
-@import "@ionic/angular/css/display.css";
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
 
-/* Optional CSS utils that can be commented out */
-@import "@ionic/angular/css/padding.css";
-@import "@ionic/angular/css/float-elements.css";
-@import "@ionic/angular/css/text-alignment.css";
-@import "@ionic/angular/css/text-transformation.css";
-@import "@ionic/angular/css/flex-utils.css";
+/* Optional CSS utils */
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+/* Fuente Nunito empaquetada con la app (funciona sin internet, RNF02). */
+@import '@fontsource/nunito/400.css';
+@import '@fontsource/nunito/600.css';
+@import '@fontsource/nunito/700.css';
+@import '@fontsource/nunito/800.css';
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* El diseño de Huellitas es claro: no se importa la paleta oscura de Ionic. */
+
+ion-toolbar {
+  --border-width: 0;
+}
+
+ion-title {
+  font-weight: 800;
+}
+
+ion-card {
+  border-radius: var(--hu-radio-tarjeta);
+  box-shadow: var(--hu-sombra);
+  margin-inline: 16px;
+}
+
+ion-button {
+  --border-radius: var(--hu-radio-control);
+  min-height: 44px;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+ion-input.hu-campo,
+ion-textarea.hu-campo,
+ion-select.hu-campo {
+  --border-radius: var(--hu-radio-control);
+  --border-color: var(--hu-borde);
+  --background: var(--hu-tarjeta);
+  margin-bottom: 14px;
+}
+
+ion-segment {
+  --background: var(--hu-tarjeta);
+  border-radius: var(--hu-radio-control);
+  border: 1px solid var(--hu-borde);
+}
+
+ion-segment-button {
+  --indicator-color: var(--ion-color-primary);
+  --color-checked: var(--ion-color-primary-contrast);
+  --border-radius: 12px;
+  min-height: 44px;
+  text-transform: none;
+  font-weight: 700;
+}
+
+.hu-seccion {
+  margin: 22px 20px 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+}
+
+.hu-lista {
+  background: transparent;
+  padding: 0 16px;
+
+  ion-item-sliding,
+  > ion-item {
+    display: block;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    box-shadow: var(--hu-sombra);
+    overflow: hidden;
+  }
+
+  ion-item {
+    --min-height: 64px;
+    --inner-border-width: 0;
+    --border-width: 0;
+  }
+}
+
+.hu-vacio {
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 32px 24px;
+
+  ion-icon {
+    font-size: 48px;
+    color: var(--ion-color-primary);
+  }
+}
+
+.hu-icono-tipo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+
+  &.primary {
+    background: var(--hu-primario-suave);
+    color: var(--ion-color-primary);
+  }
+  &.secondary {
+    background: var(--hu-secundario-suave);
+    color: var(--ion-color-secondary-shade);
+  }
+  &.tertiary {
+    background: var(--hu-terciario-suave);
+    color: var(--ion-color-tertiary);
+  }
+  &.medium {
+    background: var(--hu-medio-suave);
+    color: var(--ion-color-medium);
+  }
+}
+
+.hu-error {
+  color: var(--ion-color-danger);
+  font-size: 0.85rem;
+  margin: -6px 4px 12px;
+}
+
+.hu-nota {
+  color: var(--ion-color-medium);
+  font-size: 0.85rem;
+}
+
+.boton-peligro {
+  color: var(--ion-color-danger) !important;
+}
+
+ion-modal.hu-hoja {
+  --border-radius: 24px;
+}

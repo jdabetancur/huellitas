@@ -1,2 +1,62 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Tema de Huellitas (Figma: "Sistema de diseño").
+// https://ionicframework.com/docs/theming/colors
+
+:root {
+  --ion-font-family: 'Nunito', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --ion-color-primary: #1f8a7a;
+  --ion-color-primary-rgb: 31, 138, 122;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #17695d;
+  --ion-color-primary-tint: #359687;
+
+  --ion-color-secondary: #f29e4c;
+  --ion-color-secondary-rgb: 242, 158, 76;
+  --ion-color-secondary-contrast: #1e2b2f;
+  --ion-color-secondary-contrast-rgb: 30, 43, 47;
+  --ion-color-secondary-shade: #a85a15;
+  --ion-color-secondary-tint: #f3a85e;
+
+  --ion-color-tertiary: #6e5ce6;
+  --ion-color-tertiary-rgb: 110, 92, 230;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #6151ca;
+  --ion-color-tertiary-tint: #7d6ce9;
+
+  --ion-color-medium: #6b7a7f;
+  --ion-color-medium-rgb: 107, 122, 127;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #5e6b70;
+  --ion-color-medium-tint: #7a878c;
+
+  --ion-color-danger: #c8453b;
+  --ion-color-danger-rgb: 200, 69, 59;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #b03d34;
+  --ion-color-danger-tint: #ce584f;
+
+  --ion-background-color: #f6f4ef;
+  --ion-background-color-rgb: 246, 244, 239;
+  --ion-text-color: #1e2b2f;
+  --ion-text-color-rgb: 30, 43, 47;
+  --ion-toolbar-background: #f6f4ef;
+  --ion-item-background: #ffffff;
+  --ion-card-background: #ffffff;
+  --ion-tab-bar-background: #ffffff;
+  --ion-border-color: #e6e2da;
+
+  // Colores suaves y medidas propias de Huellitas.
+  --hu-primario-suave: #e2f2ef;
+  --hu-secundario-suave: #fdeedb;
+  --hu-terciario-suave: #ece9fe;
+  --hu-medio-suave: #eef0f0;
+  --hu-tarjeta: #ffffff;
+  --hu-borde: #e6e2da;
+  --hu-radio-tarjeta: 20px;
+  --hu-radio-control: 14px;
+  --hu-sombra: 0 4px 16px rgba(30, 43, 47, 0.06);
+}
