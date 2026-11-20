@@ -1,0 +1,166 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/mascotas"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ mascota()?.nombre ?? 'Perfil' }}</ion-title>
+    @if (mascota(); as m) {
+    <ion-buttons slot="end">
+      <ion-button [routerLink]="['/mascota', m.id, 'editar']" routerDirection="forward" aria-label="Editar mascota">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+      <ion-button (click)="eliminarMascota()" aria-label="Eliminar mascota">
+        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  @if (mascota(); as m) {
+  <section class="encabezado">
+    <app-avatar [ruta]="m.fotoUrl" [especie]="m.especie" [nombre]="m.nombre" [tamano]="88" />
+    <div>
+      <h1>{{ m.nombre }}</h1>
+      <p>{{ especies[m.especie] }} · {{ m.raza }} · {{ sexos[m.sexo] }}</p>
+      <p class="hu-nota">{{ edad(m.fechaNacimiento) }} · nació el {{ m.fechaNacimiento | date: 'd MMM y' }}</p>
+    </div>
+  </section>
+
+  <div class="datos">
+    <div class="dato">
+      <strong>{{ pesoActual() !== undefined ? (pesoActual() | number: '1.0-1') + ' kg' : '—' }}</strong>
+      <span>Peso</span>
+    </div>
+    <div class="dato">
+      <strong>{{ vacunas() }}</strong>
+      <span>Vacunas</span>
+    </div>
+    <div class="dato">
+      <strong>{{ proximo() ? (proximo()!.fecha | date: 'd MMM') : '—' }}</strong>
+      <span>Próximo</span>
+    </div>
+  </div>
+
+  <div class="acciones">
+    <ion-button [routerLink]="['/mascota', m.id, 'evento', 'nuevo']" routerDirection="forward">
+      <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
+      Evento
+    </ion-button>
+    <ion-button fill="outline" (click)="exportar()">
+      <ion-icon slot="start" name="download-outline" aria-hidden="true"></ion-icon>
+      Exportar
+    </ion-button>
+  </div>
+
+  @if (esDesarrollo) {
+  <ion-card class="desarrollo">
+    <ion-card-content>
+      <p><strong>Solo desarrollo · prueba de notificaciones</strong></p>
+      <p class="hu-nota">
+        Programa una notificación local en 2 minutos con el perfil de {{ m.nombre }}. Cierra la app o reinicia el
+        celular para probar los casos 3 y 4; al tocarla debe abrir este perfil (caso 5).
+      </p>
+      <ion-button expand="block" color="tertiary" (click)="probarNotificacion()" [disabled]="probando()">
+        <ion-icon slot="start" name="flask-outline" aria-hidden="true"></ion-icon>
+        Probar notificación en 2 min
+      </ion-button>
+      @if (pruebaProgramada(); as hora) {
+      <p class="hu-nota">Última prueba programada para las {{ hora | date: 'h:mm:ss a' }}.</p>
+      }
+    </ion-card-content>
+  </ion-card>
+  }
+
+  <h3 class="hu-seccion">Próximo recordatorio</h3>
+  @if (proximo(); as p) {
+  <ion-list lines="none" class="hu-lista">
+    <ion-item>
+      <div slot="start" class="hu-icono-tipo" [class]="tipos[p.evento.tipo].color">
+        <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <ion-label>
+        <h3>{{ titulo(p.evento) }}</h3>
+        <p>
+          {{ p.fecha | date: "EEEE d 'de' MMMM" }} · {{ cuando(p.fecha) }} @if
+          (repeticion(p.evento.recordatorio?.repetirCadaMeses); as rep) { · {{ rep }} }
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">No hay recordatorios pendientes.</p>
+  }
+
+  <h3 class="hu-seccion">Controles de peso</h3>
+  @if (pesos().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (p of pesos(); track p.id; let i = $index) {
+    <ion-item>
+      <div slot="start" class="hu-icono-tipo medium">
+        <ion-icon name="barbell-outline" aria-hidden="true"></ion-icon>
+      </div>
+      <ion-label>
+        <h3>{{ p.pesoKg | number: '1.0-1' }} kg</h3>
+        <p>{{ p.fecha | date: 'd MMM y' }}</p>
+      </ion-label>
+      @if (diferencia(i); as d) {
+      <span slot="end" class="variacion" [class.sube]="d > 0">
+        <ion-icon [name]="d > 0 ? 'trending-up-outline' : 'trending-down-outline'" aria-hidden="true"></ion-icon>
+        {{ d > 0 ? '+' : '' }}{{ d | number: '1.0-1' }} kg
+      </span>
+      }
+    </ion-item>
+    }
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">Aún no hay controles de peso. Agrégalos con «+ Evento» › Peso.</p>
+  }
+
+  <h3 class="hu-seccion">Historial de salud</h3>
+  @if (historial().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (e of historial(); track e.id) {
+    <ion-item-sliding #deslizable>
+      <ion-item>
+        <div slot="start" class="hu-icono-tipo" [class]="tipos[e.tipo].color">
+          <ion-icon [name]="tipos[e.tipo].icono" aria-hidden="true"></ion-icon>
+        </div>
+        <ion-label class="ion-text-wrap">
+          <h3>{{ tipos[e.tipo].etiqueta }} @if (e.tipo === 'peso') { · {{ e.pesoKg | number: '1.0-1' }} kg }</h3>
+          <p>{{ e.fecha | date: 'd MMM y' }}</p>
+          @if (e.notas) {
+          <p class="notas">{{ e.notas }}</p>
+          } @if (e.recordatorio) {
+          <p class="recordatorio">
+            <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+            {{ e.recordatorio.fecha | date: 'd MMM y' }} @if (repeticion(e.recordatorio.repetirCadaMeses); as rep) { ·
+            {{ rep }} }
+          </p>
+          }
+        </ion-label>
+        @if (e.fotoCarneUrl) {
+        <ion-icon slot="end" name="camera-outline" color="medium" aria-label="Tiene foto del carné"></ion-icon>
+        }
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="eliminarEvento(e, deslizable)">
+          <ion-icon slot="top" name="trash-outline" aria-hidden="true"></ion-icon>
+          Eliminar
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+    }
+  </ion-list>
+  <p class="hu-nota ayuda">Desliza un evento hacia la izquierda para eliminarlo.</p>
+  } @else {
+  <p class="hu-nota sin-datos">El historial está vacío. Registra el primer evento con «+ Evento».</p>
+  } } @else {
+  <div class="hu-vacio">
+    <ion-icon name="paw" aria-hidden="true"></ion-icon>
+    <p>Esta mascota ya no existe.</p>
+    <ion-button routerLink="/tabs/mascotas" routerDirection="root">Ir a Mis mascotas</ion-button>
+  </div>
+  }
+</ion-content>

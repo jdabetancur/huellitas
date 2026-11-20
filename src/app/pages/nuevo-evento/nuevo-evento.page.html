@@ -1,0 +1,148 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/mascota/' + id()"></ion-back-button>
+    </ion-buttons>
+    <ion-title>Nuevo evento</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  @if (mascota(); as m) {
+  <p class="para">Para <strong>{{ m.nombre }}</strong></p>
+
+  @if (tipo() === 'vacuna') {
+  <div class="jornada">
+    <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+    <div>
+      <strong>Jornada de vacunación</strong>
+      <p>¿Hay una jornada gratuita de la secretaría de salud cerca? Agrégala con un toque.</p>
+    </div>
+    <ion-button size="small" color="secondary" (click)="usarJornada()">Usar</ion-button>
+  </div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <span class="etiqueta" id="etiqueta-tipo">Tipo de evento</span>
+    <div class="chips" role="radiogroup" aria-labelledby="etiqueta-tipo">
+      @for (t of ordenTipos; track t) {
+      <ion-chip
+        role="radio"
+        [attr.aria-checked]="tipo() === t"
+        [class.activo]="tipo() === t"
+        (click)="elegirTipo(t)"
+        (keydown.enter)="elegirTipo(t)"
+        tabindex="0"
+      >
+        <ion-icon [name]="tipos[t].icono" aria-hidden="true"></ion-icon>
+        <ion-label>{{ t === 'cita' ? 'Cita' : t === 'peso' ? 'Peso' : tipos[t].etiqueta }}</ion-label>
+      </ion-chip>
+      }
+    </div>
+
+    @if (tipo() === 'peso') {
+    <ion-input
+      class="hu-campo"
+      formControlName="pesoKg"
+      type="number"
+      inputmode="decimal"
+      label="Peso (kg) *"
+      labelPlacement="stacked"
+      fill="outline"
+      placeholder="Ej. 12.4"
+      [min]="0.1"
+      [max]="199"
+      step="0.1"
+    ></ion-input>
+    @if (mostrarError('pesoInvalido')) {
+    <p class="hu-error">Escribe un peso mayor que 0 kg.</p>
+    } }
+
+    <ion-input
+      class="hu-campo"
+      formControlName="fecha"
+      type="date"
+      label="Fecha *"
+      labelPlacement="stacked"
+      fill="outline"
+      [max]="maxFecha()"
+      errorText="Indica la fecha del evento."
+    ></ion-input>
+    @if (mostrarError('fechaFutura')) {
+    <p class="hu-error">
+      Un evento ya realizado no puede tener fecha futura. Si es a futuro, márcalo como cita o activa «Recordarme».
+    </p>
+    } @if (tipo() !== 'peso') {
+    <ion-select
+      class="hu-campo"
+      formControlName="repetirCadaMeses"
+      label="Repetir"
+      labelPlacement="stacked"
+      fill="outline"
+      interface="popover"
+    >
+      @for (o of opcionesRepetir; track o.meses) {
+      <ion-select-option [value]="o.meses">{{ o.etiqueta }}</ion-select-option>
+      }
+    </ion-select>
+
+    <div class="recordarme">
+      <ion-toggle
+        formControlName="recordarme"
+        justify="space-between"
+        (ionChange)="cambiarRecordarme($event.detail.checked)"
+      >
+        <span class="titulo-toggle">
+          <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+          Recordarme
+        </span>
+        <span class="hu-nota bloque">Un día antes, a las 9:00 a. m.</span>
+      </ion-toggle>
+      @if (fechaAviso(); as aviso) {
+      <p class="hu-nota resumen-aviso">
+        Te avisaremos el {{ aviso | date: "EEEE d 'de' MMMM" }} a las 9:00 a. m. @if (fechaRecordatorio() !==
+        form.controls.fecha.value) { (próxima repetición: {{ fechaRecordatorio() | date: 'd MMM y' }}) }
+      </p>
+      }
+    </div>
+    @if (mostrarError('recordatorioSinFecha')) {
+    <p class="hu-error">Para recordar un evento que ya pasó, elige cada cuánto se repite o pon una fecha futura.</p>
+    } }
+
+    <ion-textarea
+      class="hu-campo"
+      formControlName="notas"
+      label="Notas"
+      labelPlacement="stacked"
+      fill="outline"
+      [autoGrow]="true"
+      [counter]="true"
+      [maxlength]="300"
+      placeholder="Ej. Antirrábica, lote 1234, Dra. Gómez"
+    ></ion-textarea>
+
+    @if (tipo() !== 'peso') {
+    <button type="button" class="foto-carne" (click)="adjuntarFotoCarne()">
+      <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      <span>
+        <strong>Foto del carné</strong>
+        <small>Toma o adjunta una foto del carné o de una fórmula</small>
+      </span>
+    </button>
+    }
+
+    <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
+  </form>
+  } @else {
+  <div class="hu-vacio">
+    <ion-icon name="paw" aria-hidden="true"></ion-icon>
+    <p>No encontramos esta mascota.</p>
+  </div>
+  }
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="pie">
+    <ion-button expand="block" (click)="guardar()" [disabled]="guardando() || !mascota()">Guardar evento</ion-button>
+  </ion-toolbar>
+</ion-footer>

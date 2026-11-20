@@ -1,0 +1,58 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Recordatorios</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="nuevoRecordatorio()" aria-label="Nuevo recordatorio">
+        <ion-icon slot="icon-only" name="add"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <p class="mes">{{ hoy | date: "MMMM 'de' y" }}</p>
+
+  <ng-template #item let-r>
+    <ion-item button detail="true" [routerLink]="['/mascota', r.mascota.id]" routerDirection="forward">
+      <div slot="start" class="fecha" [class.pronto]="r.dias <= 7">
+        <strong>{{ r.fecha | date: 'd' }}</strong>
+        <span>{{ r.fecha | date: 'MMM' }}</span>
+      </div>
+      <ion-label>
+        <h3>{{ r.mascota.nombre }} · {{ titulo(r.evento) }}</h3>
+        <p>{{ cuando(r.fecha) }} · {{ repeticion(r) }}</p>
+      </ion-label>
+      <ion-icon slot="end" name="notifications-outline" color="medium" aria-hidden="true"></ion-icon>
+    </ion-item>
+  </ng-template>
+
+  <h3 class="hu-seccion">Esta semana</h3>
+  @if (estaSemana().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (r of estaSemana(); track r.evento.id) {
+    <ng-container *ngTemplateOutlet="item; context: { $implicit: r }" />
+    }
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">Nada pendiente esta semana.</p>
+  }
+
+  <h3 class="hu-seccion">Más adelante</h3>
+  @if (masAdelante().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (r of masAdelante(); track r.evento.id) {
+    <ng-container *ngTemplateOutlet="item; context: { $implicit: r }" />
+    }
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">No hay más recordatorios programados.</p>
+  }
+
+  <button type="button" class="jornadas" (click)="verJornadas()">
+    <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+    <span>
+      <strong>Jornadas de vacunación</strong>
+      <small>Campañas gratuitas de la secretaría de salud · Próximamente</small>
+    </span>
+  </button>
+</ion-content>

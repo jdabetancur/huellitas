@@ -1,0 +1,74 @@
+.resumen {
+  margin: 4px 20px 12px;
+  color: var(--ion-color-medium);
+}
+
+.destacada {
+  --background: var(--ion-color-primary);
+  --color: var(--ion-color-primary-contrast);
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+
+  ion-card-content {
+    padding: 18px 20px;
+  }
+
+  .etiqueta {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.85;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin: 6px 0 2px;
+    color: inherit;
+  }
+
+  p {
+    color: inherit;
+    opacity: 0.9;
+    text-transform: capitalize;
+  }
+
+  .cuando {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 700;
+    font-size: 0.85rem;
+  }
+}
+
+.nombre {
+  font-weight: 800;
+}
+
+.chip-fecha {
+  margin: 6px 0 0;
+  height: 26px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  --background: var(--hu-medio-suave);
+  --color: var(--ion-color-medium-shade);
+
+  &.pronto {
+    --background: var(--hu-secundario-suave);
+    --color: var(--ion-color-secondary-shade);
+  }
+
+  &.al-dia {
+    --background: var(--hu-primario-suave);
+    --color: var(--ion-color-primary-shade);
+  }
+}
+
+.ayuda {
+  text-align: center;
+  margin: 4px 24px 96px;
+}

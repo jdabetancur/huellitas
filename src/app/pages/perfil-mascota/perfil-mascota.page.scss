@@ -1,0 +1,97 @@
+.encabezado {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 8px 20px 4px;
+
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin: 0 0 2px;
+  }
+
+  p {
+    margin: 2px 0;
+  }
+}
+
+.datos {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  padding: 14px 16px 4px;
+}
+
+.dato {
+  background: var(--hu-tarjeta);
+  border-radius: 16px;
+  box-shadow: var(--hu-sombra);
+  padding: 12px 8px;
+  text-align: center;
+
+  strong {
+    display: block;
+    font-size: 1.05rem;
+    font-weight: 800;
+  }
+
+  span {
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 12px 16px 0;
+
+  ion-button {
+    margin: 0;
+  }
+}
+
+.desarrollo {
+  margin-top: 16px;
+  border: 2px dashed var(--ion-color-tertiary);
+  box-shadow: none;
+
+  p {
+    margin: 0 0 8px;
+  }
+}
+
+.sin-datos {
+  margin: 0 20px;
+}
+
+.notas {
+  color: var(--ion-text-color);
+}
+
+.recordatorio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--ion-color-primary-shade) !important;
+  font-weight: 600;
+}
+
+.variacion {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ion-color-primary-shade);
+
+  &.sube {
+    color: var(--ion-color-secondary-shade);
+  }
+}
+
+.ayuda {
+  text-align: center;
+  margin: 4px 24px 24px;
+}

@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="id() ? '/mascota/' + id() : '/tabs/mascotas'"></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{ editando() ? 'Editar mascota' : 'Nueva mascota' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="foto">
+      <button type="button" class="boton-foto" (click)="elegirFoto()" aria-label="Agregar o cambiar foto">
+        <app-avatar [ruta]="fotoUrl()" [especie]="especieActual()" [tamano]="104" />
+        <span class="camara"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon></span>
+      </button>
+      <div class="acciones-foto">
+        <ion-button fill="clear" size="small" (click)="elegirFoto()">
+          {{ fotoUrl() ? 'Cambiar foto' : 'Agregar foto' }}
+        </ion-button>
+        @if (fotoUrl()) {
+        <ion-button fill="clear" size="small" color="medium" (click)="quitarFoto()">Quitar</ion-button>
+        }
+      </div>
+    </div>
+
+    <ion-label class="etiqueta">Especie</ion-label>
+    <ion-segment formControlName="especie" class="campo-segmento">
+      @for (e of especies; track e[0]) {
+      <ion-segment-button [value]="e[0]">
+        <ion-label>{{ e[1] }}</ion-label>
+      </ion-segment-button>
+      }
+    </ion-segment>
+
+    <ion-input
+      class="hu-campo"
+      formControlName="nombre"
+      label="Nombre *"
+      labelPlacement="stacked"
+      fill="outline"
+      placeholder="Ej. Toby"
+      [maxlength]="40"
+      errorText="Escribe el nombre de tu mascota."
+    ></ion-input>
+
+    <ion-input
+      class="hu-campo"
+      formControlName="raza"
+      label="Raza *"
+      labelPlacement="stacked"
+      fill="outline"
+      placeholder="Ej. Criollo"
+      [maxlength]="40"
+      errorText="Escribe la raza (o «Criollo» si no la sabes)."
+    ></ion-input>
+
+    <ion-label class="etiqueta">Sexo</ion-label>
+    <ion-segment formControlName="sexo" class="campo-segmento">
+      @for (s of sexos; track s[0]) {
+      <ion-segment-button [value]="s[0]">
+        <ion-label>{{ s[1] }}</ion-label>
+      </ion-segment-button>
+      }
+    </ion-segment>
+
+    <ion-input
+      class="hu-campo"
+      formControlName="fechaNacimiento"
+      type="date"
+      label="Fecha de nacimiento *"
+      labelPlacement="stacked"
+      fill="outline"
+      [max]="hoy"
+      [errorText]="
+        error('fechaNacimiento', 'futura')
+          ? 'La fecha de nacimiento no puede ser futura.'
+          : 'Indica la fecha de nacimiento (aproximada si no la sabes).'
+      "
+    ></ion-input>
+
+    @if (!editando()) {
+    <div class="aviso">
+      <ion-icon name="calendar-outline" aria-hidden="true"></ion-icon>
+      <p>
+        Al guardar te propondremos un calendario de vacunas y desparasitaciones según la especie y la edad{{
+        etapaTexto() }}. Podrás ajustarlo.
+      </p>
+    </div>
+    }
+
+    <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
+  </form>
+</ion-content>
+
+<ion-footer>
+  <ion-toolbar class="pie">
+    <ion-button expand="block" (click)="guardar()" [disabled]="guardando()">
+      {{ editando() ? 'Guardar cambios' : 'Guardar mascota' }}
+    </ion-button>
+  </ion-toolbar>
+</ion-footer>

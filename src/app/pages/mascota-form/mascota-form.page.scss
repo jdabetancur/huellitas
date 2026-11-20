@@ -1,0 +1,71 @@
+.foto {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px 0 18px;
+}
+
+.boton-foto {
+  position: relative;
+  background: none;
+  border: 0;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.camara {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid var(--ion-background-color);
+}
+
+.acciones-foto {
+  display: flex;
+  gap: 4px;
+}
+
+.etiqueta {
+  display: block;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 0 4px 6px;
+}
+
+.campo-segmento {
+  margin-bottom: 16px;
+}
+
+.aviso {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  background: var(--hu-primario-suave);
+  color: var(--ion-color-primary-shade);
+  border-radius: var(--hu-radio-control);
+  padding: 12px 14px;
+
+  ion-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+}
+
+.pie {
+  --background: var(--ion-background-color);
+  padding: 8px 16px calc(8px + var(--ion-safe-area-bottom, 0px));
+}

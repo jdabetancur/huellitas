@@ -1,0 +1,64 @@
+.mes {
+  margin: 4px 20px 0;
+  color: var(--ion-color-medium);
+  text-transform: capitalize;
+}
+
+.fecha {
+  width: 48px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--hu-medio-suave);
+  color: var(--ion-color-medium-shade);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.1;
+
+  strong {
+    font-size: 1.2rem;
+    font-weight: 800;
+  }
+
+  span {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  &.pronto {
+    background: var(--hu-primario-suave);
+    color: var(--ion-color-primary-shade);
+  }
+}
+
+.sin-datos {
+  margin: 0 20px;
+}
+
+.jornadas {
+  width: calc(100% - 32px);
+  margin: 24px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  background: var(--hu-secundario-suave);
+  border: 0;
+  border-radius: var(--hu-radio-tarjeta);
+  padding: 16px;
+  color: var(--ion-text-color);
+  font: inherit;
+  min-height: 44px;
+
+  ion-icon {
+    font-size: 26px;
+    color: var(--ion-color-secondary-shade);
+  }
+
+  small {
+    display: block;
+    color: var(--ion-color-medium-shade);
+  }
+}
