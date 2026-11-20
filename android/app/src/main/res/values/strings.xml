@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Huellitas</string>
+    <string name="title_activity_main">Huellitas</string>
+    <string name="package_name">co.edu.poli.huellitas</string>
+    <string name="custom_url_scheme">co.edu.poli.huellitas</string>
+</resources>
