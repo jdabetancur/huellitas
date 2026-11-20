@@ -40,11 +40,11 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF03 | Registrar eventos de salud (vacuna, desparasitación, cita, peso) con fecha y notas | ✅ Implementado | Base | — |
 | RF04 | Historial de salud ordenado por fecha | ✅ Implementado | Base | — |
 | RF13 | Registrar el peso y verlo como lista de controles | ✅ Implementado | Base | — |
-| RF05 | Calendario precargado según especie y edad | 🔧 Interfaz lista, falta la lógica | Compañero 2 | ver Issues |
-| RF06 | Recordatorios únicos o recurrentes | 🔧 Interfaz y datos listos, falta reprogramar | Compañero 1 | ver Issues |
-| RF07 | Notificación local el día anterior | 🔧 Servicio real listo, falta programar el aviso de cada evento | Compañero 1 | ver Issues |
-| RF08 | Próximos recordatorios de todas las mascotas | 🔧 Versión básica, falta completar | Compañero 2 | ver Issues |
-| RF10 | Foto del carné asociada a un evento | 🔧 Interfaz y FotoService listos, falta conectar | Compañero 3 | ver Issues |
+| RF05 | Calendario precargado según especie y edad | 🔧 Interfaz lista, falta la lógica | Compañero 2 | [#3](../../issues/3) |
+| RF06 | Recordatorios únicos o recurrentes | 🔧 Interfaz y datos listos, falta reprogramar | Compañero 1 | [#1](../../issues/1) |
+| RF07 | Notificación local el día anterior | 🔧 Servicio real listo, falta programar el aviso de cada evento | Compañero 1 | [#2](../../issues/2) |
+| RF08 | Próximos recordatorios de todas las mascotas | 🔧 Versión básica, falta completar | Compañero 2 | [#4](../../issues/4) |
+| RF10 | Foto del carné asociada a un evento | 🔧 Interfaz y FotoService listos, falta conectar | Compañero 3 | [#5](../../issues/5) |
 | RF09 | Jornada de vacunación con un toque | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
 | RF11 | Exportar historial en PDF | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
 | RF12 | Exportar e importar perfil en CSV | ⏳ Entrega 3 (botón con «Próximamente») | — | — |
@@ -133,11 +133,11 @@ Prepara el celular: instala el APK de **desarrollo** (`npm run android:sync:dev`
 | # | Caso | Cómo probarlo en el celular | Responsable | Estado |
 |---|---|---|---|---|
 | 1 | Al crear el primer recordatorio en Android 13+, la app pide el permiso de notificaciones y continúa al aceptarlo | Instala la app limpia → Perfil → «+ Evento» → activa «Recordarme» (o toca «Probar notificación en 2 min»). Debe salir el diálogo de Android; acepta y el interruptor queda activo | Base | Listo para probar |
-| 2 | Una vacuna con refuerzo y «Recordarme» activo deja la notificación programada para el día anterior al refuerzo a las 9:00 a. m. | Registra una vacuna con «Repetir: cada año» y «Recordarme». Verifica con `adb shell dumpsys alarm \| findstr huellitas` o temporalmente con un refuerzo para mañana | Compañero 1 (RF07) | Pendiente: `NotificacionesService.programarRecordatorio` |
+| 2 | Una vacuna con refuerzo y «Recordarme» activo deja la notificación programada para el día anterior al refuerzo a las 9:00 a. m. | Registra una vacuna con «Repetir: cada año» y «Recordarme». Verifica con `adb shell dumpsys alarm \| findstr huellitas` o temporalmente con un refuerzo para mañana | Compañero 1 (RF07, [#2](../../issues/2)) | Pendiente: `NotificacionesService.programarRecordatorio` |
 | 3 | Un recordatorio de prueba a 2 minutos llega con la app cerrada | Toca «Probar notificación en 2 min», cierra la app (deslízala de recientes) y espera | Base | Listo para probar |
 | 4 | Un recordatorio programado llega después de reiniciar el celular | Toca «Probar notificación en 2 min» y reinicia el celular de inmediato. Desbloquéalo y espera a que llegue | Base | Listo para probar |
 | 5 | Tocar la notificación abre el perfil de la mascota correspondiente | Cuando llegue la notificación del caso 3 o 4, tócala: debe abrir el perfil de esa mascota | Base | Listo para probar |
-| 6 | Una desparasitación que se repite cada 3 meses programa automáticamente la siguiente al cumplirse la fecha | Registra una desparasitación «cada 3 meses» con «Recordarme»; al cumplirse la fecha debe quedar programada la siguiente | Compañero 1 (RF06) | Pendiente: `NotificacionesService.reprogramarRecurrentes` |
+| 6 | Una desparasitación que se repite cada 3 meses programa automáticamente la siguiente al cumplirse la fecha | Registra una desparasitación «cada 3 meses» con «Recordarme»; al cumplirse la fecha debe quedar programada la siguiente | Compañero 1 (RF06, [#1](../../issues/1)) | Pendiente: `NotificacionesService.reprogramarRecurrentes` |
 
 Notas para que la prueba salga bien:
 
