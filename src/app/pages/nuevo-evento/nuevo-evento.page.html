@@ -3,7 +3,7 @@
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="'/mascota/' + id()"></ion-back-button>
     </ion-buttons>
-    <ion-title>Nuevo evento</ion-title>
+    <ion-title>{{ editando() ? 'Editar evento' : 'Nuevo evento' }}</ion-title>
   </ion-toolbar>
 </ion-header>
 
@@ -11,7 +11,7 @@
   @if (mascota(); as m) {
   <p class="para">Para <strong>{{ m.nombre }}</strong></p>
 
-  @if (tipo() === 'vacuna') {
+  @if (tipo() === 'vacuna' && !editando()) {
   <div class="jornada">
     <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
     <div>
@@ -143,6 +143,8 @@
 
 <ion-footer>
   <ion-toolbar class="pie">
-    <ion-button expand="block" (click)="guardar()" [disabled]="guardando() || !mascota()">Guardar evento</ion-button>
+    <ion-button expand="block" (click)="guardar()" [disabled]="guardando() || !mascota()"
+      >{{ editando() ? 'Guardar cambios' : 'Guardar evento' }}</ion-button
+    >
   </ion-toolbar>
 </ion-footer>

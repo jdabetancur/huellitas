@@ -1,6 +1,5 @@
 import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import {
   ActionSheetController,
   IonButton,
@@ -11,7 +10,6 @@ import {
   IonItem,
   IonLabel,
   IonList,
-  IonRouterLink,
   IonTitle,
   IonToolbar,
   NavController,
@@ -19,6 +17,7 @@ import {
 
 import { OPCIONES_REPETIR, TIPOS_EVENTO, tituloEvento } from '../../models';
 import { AvisosService } from '../../services/avisos.service';
+import { DetalleEventoService } from '../../services/detalle-evento.service';
 import { MascotasService } from '../../services/mascotas.service';
 import type { ProximoRecordatorio } from '../../services/recordatorios.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
@@ -35,8 +34,6 @@ import { cuandoTexto } from '../../utils/fechas';
   imports: [
     DatePipe,
     NgTemplateOutlet,
-    RouterLink,
-    IonRouterLink,
     IonHeader,
     IonToolbar,
     IonTitle,
@@ -53,6 +50,7 @@ export class RecordatoriosPage {
   private readonly datos = inject(MascotasService);
   private readonly recordatorios = inject(RecordatoriosService);
   private readonly avisos = inject(AvisosService);
+  private readonly detalleEvento = inject(DetalleEventoService);
   private readonly hojaAcciones = inject(ActionSheetController);
   private readonly nav = inject(NavController);
 
@@ -85,6 +83,11 @@ export class RecordatoriosPage {
     await hoja.present();
     const { data } = await hoja.onDidDismiss<string>();
     if (data) await this.nav.navigateForward(['/mascota', data, 'evento', 'nuevo']);
+  }
+
+  /** Muestra la información del recordatorio, con las opciones de editarlo, eliminarlo o ver el perfil. */
+  protected verRecordatorio(eventoId: string): Promise<void> {
+    return this.detalleEvento.abrir(eventoId, { mostrarPerfil: true });
   }
 
   protected verJornadas(): Promise<void> {

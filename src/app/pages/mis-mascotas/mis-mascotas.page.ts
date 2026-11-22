@@ -28,6 +28,7 @@ import { AvatarComponent } from '../../components/avatar/avatar.component';
 import type { Mascota } from '../../models';
 import { ESPECIES, tituloEvento } from '../../models';
 import { AvisosService } from '../../services/avisos.service';
+import { DetalleEventoService } from '../../services/detalle-evento.service';
 import { MascotasService } from '../../services/mascotas.service';
 import type { ProximoRecordatorio } from '../../services/recordatorios.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
@@ -67,6 +68,7 @@ export class MisMascotasPage {
   private readonly datos = inject(MascotasService);
   private readonly recordatorios = inject(RecordatoriosService);
   private readonly avisos = inject(AvisosService);
+  private readonly detalleEvento = inject(DetalleEventoService);
   private readonly nav = inject(NavController);
 
   protected readonly mascotas = this.datos.mascotas;
@@ -79,6 +81,10 @@ export class MisMascotasPage {
 
   protected proximoDe(id: string): ProximoRecordatorio | undefined {
     return this.recordatorios.proximoDe(id);
+  }
+
+  protected verRecordatorio(eventoId: string): Promise<void> {
+    return this.detalleEvento.abrir(eventoId, { mostrarPerfil: true });
   }
 
   protected importarCsv(): Promise<void> {

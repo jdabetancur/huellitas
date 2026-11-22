@@ -1,4 +1,5 @@
 import { DatePipe } from '@angular/common';
+import type { OnInit } from '@angular/core';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -32,7 +33,7 @@ import { hoyISO, sumarDias } from '../../utils/fechas';
 import { admiteFechaFutura, reglasEvento } from '../../utils/validadores';
 
 /**
- * P3 · Nuevo evento (RF03 registrar evento, RF13 peso).
+ * P3 · Nuevo / editar evento (RF03 registrar evento, RF13 peso).
  * También tiene la interfaz de RF06 (Repetir), RF07 (Recordarme), RF09 (jornada, Entrega 3) y RF10 (foto del carné).
  * RNF04: desde el perfil son 3 toques: "+ Evento" → tipo → "Guardar evento" (la fecha empieza en hoy).
  */
@@ -61,7 +62,7 @@ import { admiteFechaFutura, reglasEvento } from '../../utils/validadores';
     IonTextarea,
   ],
 })
-export class NuevoEventoPage {
+export class NuevoEventoPage implements OnInit {
   private readonly datos = inject(MascotasService);
   private readonly recordatorios = inject(RecordatoriosService);
   private readonly notificaciones = inject(NotificacionesService);
@@ -70,6 +71,10 @@ export class NuevoEventoPage {
 
   /** Id de la mascota (ruta /mascota/:id/evento/nuevo). */
   readonly id = input.required<string>();
+  /** Id del evento cuando se edita (ruta /mascota/:id/evento/:eventoId/editar). */
+  readonly eventoId = input<string>();
+
+  protected readonly editando = computed(() => !!this.eventoId());
 
   protected readonly mascota = computed(() => this.datos.obtenerMascota(this.id()));
   protected readonly ordenTipos = ORDEN_TIPOS;
@@ -105,6 +110,25 @@ export class NuevoEventoPage {
     const fecha = this.fechaRecordatorio();
     return fecha ? sumarDias(fecha, -1) : undefined;
   });
+
+  ngOnInit(): void {
+    const eventoId = this.eventoId();
+    if (!eventoId) return;
+    const evento = this.datos.obtenerEvento(eventoId);
+    if (!evento || evento.mascotaId !== this.id()) {
+      void this.avisos.mensaje('No encontramos ese evento.', 'danger');
+      this.nav.back();
+      return;
+    }
+    this.form.setValue({
+      tipo: evento.tipo,
+      fecha: evento.fecha,
+      pesoKg: evento.pesoKg ?? null,
+      repetirCadaMeses: evento.recordatorio?.repetirCadaMeses ?? 0,
+      recordarme: !!evento.recordatorio,
+      notas: evento.notas ?? '',
+    });
+  }
 
   protected elegirTipo(tipo: TipoEvento): void {
     this.form.controls.tipo.setValue(tipo);
@@ -161,14 +185,22 @@ export class NuevoEventoPage {
         v.recordarme && fechaRecordatorio
           ? { fecha: fechaRecordatorio, repetirCadaMeses: v.repetirCadaMeses || undefined }
           : undefined;
-      const evento = await this.datos.agregarEvento({
-        mascotaId: mascota.id,
+      const datos = {
         tipo: v.tipo,
         fecha: v.fecha,
         notas: v.notas,
         pesoKg: v.tipo === 'peso' ? Number(v.pesoKg) : undefined,
         recordatorio,
-      });
+      };
+      const eventoId = this.eventoId();
+      let evento;
+      if (eventoId) {
+        // Al editar se cancela la notificación anterior y se vuelve a programar con los datos nuevos.
+        await this.notificaciones.cancelar([this.datos.obtenerEvento(eventoId)?.recordatorio?.notificacionId]);
+        evento = await this.datos.actualizarEvento(eventoId, datos);
+      } else {
+        evento = await this.datos.agregarEvento({ mascotaId: mascota.id, ...datos });
+      }
       if (recordatorio) {
         // TODO(RF07): programarRecordatorio aún no programa nada; cuando devuelva el id se guarda aquí.
         const notificacionId = await this.notificaciones.programarRecordatorio(evento, mascota);
@@ -176,7 +208,7 @@ export class NuevoEventoPage {
           await this.datos.actualizarEvento(evento.id, { recordatorio: { ...recordatorio, notificacionId } });
         }
       }
-      await this.avisos.mensaje('Evento guardado.', 'success');
+      await this.avisos.mensaje(eventoId ? 'Cambios guardados.' : 'Evento guardado.', 'success');
       this.nav.back();
     } finally {
       this.guardando.set(false);

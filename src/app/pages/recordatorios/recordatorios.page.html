@@ -13,7 +13,7 @@
   <p class="mes">{{ hoy | date: "MMMM 'de' y" }}</p>
 
   <ng-template #item let-r>
-    <ion-item button detail="true" [routerLink]="['/mascota', r.mascota.id]" routerDirection="forward">
+    <ion-item button detail="true" (click)="verRecordatorio(r.evento.id)">
       <div slot="start" class="fecha" [class.pronto]="r.dias <= 7">
         <strong>{{ r.fecha | date: 'd' }}</strong>
         <span>{{ r.fecha | date: 'MMM' }}</span>
