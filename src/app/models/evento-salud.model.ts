@@ -16,6 +16,8 @@ export interface Recordatorio {
 export interface EventoSalud {
   id: string;
   mascotaId: string;
+  /** Identifica los eventos generados automáticamente por una plantilla RF05. */
+  origenPlantilla?: string;
   tipo: TipoEvento;
   /** Fecha en que ocurrió (o, para citas y eventos con recordatorio, en que ocurrirá) el evento. */
   fecha: string;

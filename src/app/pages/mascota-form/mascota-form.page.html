@@ -3,23 +3,30 @@
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="id() ? '/mascota/' + id() : '/tabs/mascotas'"></ion-back-button>
     </ion-buttons>
-    <ion-title>{{ editando() ? 'Editar mascota' : 'Nueva mascota' }}</ion-title>
+    <ion-title>
+      @if (mascotaRegistrada()) { Calendario de salud } @else { {{ editando() ? 'Editar mascota' : 'Nueva mascota' }} }
+    </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content class="ion-padding">
+  @if (!mascotaRegistrada()) {
   <form [formGroup]="form" (ngSubmit)="guardar()">
     <div class="foto">
       <button type="button" class="boton-foto" (click)="elegirFoto()" aria-label="Agregar o cambiar foto">
         <app-avatar [ruta]="fotoUrl()" [especie]="especieActual()" [tamano]="104" />
-        <span class="camara"><ion-icon name="camera-outline" aria-hidden="true"></ion-icon></span>
+        <span class="camara">
+          <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+        </span>
       </button>
+
       <div class="acciones-foto">
         <ion-button fill="clear" size="small" (click)="elegirFoto()">
           {{ fotoUrl() ? 'Cambiar foto' : 'Agregar foto' }}
         </ion-button>
+
         @if (fotoUrl()) {
-        <ion-button fill="clear" size="small" color="medium" (click)="quitarFoto()">Quitar</ion-button>
+        <ion-button fill="clear" size="small" color="medium" (click)="quitarFoto()"> Quitar </ion-button>
         }
       </div>
     </div>
@@ -73,10 +80,10 @@
       fill="outline"
       [max]="hoy"
       [errorText]="
-        error('fechaNacimiento', 'futura')
-          ? 'La fecha de nacimiento no puede ser futura.'
-          : 'Indica la fecha de nacimiento (aproximada si no la sabes).'
-      "
+          error('fechaNacimiento', 'futura')
+            ? 'La fecha de nacimiento no puede ser futura.'
+            : 'Indica la fecha de nacimiento (aproximada si no la sabes).'
+        "
     ></ion-input>
 
     @if (!editando()) {
@@ -91,12 +98,68 @@
 
     <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
   </form>
+  } @else {
+  <div class="encabezado-calendario">
+    <h2>{{ mascotaRegistrada()!.nombre }}</h2>
+    <p>
+      Revisa los eventos sugeridos. Puedes desmarcar los que no necesites y modificar sus fechas antes de guardarlos.
+    </p>
+  </div>
+
+  <div class="aviso">
+    <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
+    <p>
+      Este calendario es orientativo. Verifica las vacunas y desparasitaciones con un veterinario, teniendo en cuenta la
+      edad real y los antecedentes de tu mascota.
+    </p>
+  </div>
+
+  @for (propuesta of propuestas(); track $index; let i = $index) {
+  <div class="propuesta">
+    <ion-checkbox [checked]="propuesta.incluir" (ionChange)="cambiarInclusion(i, $event.detail.checked)">
+      <span class="nombre-propuesta">{{ propuesta.nombre }}</span>
+    </ion-checkbox>
+
+    <ion-label class="detalle-propuesta">
+      {{ propuesta.tipo === 'vacuna' ? 'Vacunación' : 'Desparasitación' }} @if (propuesta.edad) { · Referencia: {{
+      propuesta.edad }} }
+    </ion-label>
+
+    @if (propuesta.notas) {
+    <p class="descripcion-propuesta">{{ propuesta.notas }}</p>
+    }
+
+    <ion-input
+      class="hu-campo fecha-propuesta"
+      type="date"
+      label="Fecha sugerida"
+      labelPlacement="stacked"
+      fill="outline"
+      [value]="propuesta.fecha"
+      [min]="manana"
+      [disabled]="!propuesta.incluir"
+      (ionChange)="cambiarFecha(i, $event.detail.value ?? '')"
+    ></ion-input>
+  </div>
+  } }
 </ion-content>
 
 <ion-footer>
   <ion-toolbar class="pie">
+    @if (mascotaRegistrada()) {
+    <div class="acciones-calendario">
+      <ion-button expand="block" fill="clear" color="medium" (click)="omitirCalendario()" [disabled]="guardando()">
+        Omitir calendario
+      </ion-button>
+
+      <ion-button expand="block" (click)="guardarCalendario()" [disabled]="guardando()">
+        Guardar calendario
+      </ion-button>
+    </div>
+    } @else {
     <ion-button expand="block" (click)="guardar()" [disabled]="guardando()">
       {{ editando() ? 'Guardar cambios' : 'Guardar mascota' }}
     </ion-button>
+    }
   </ion-toolbar>
 </ion-footer>

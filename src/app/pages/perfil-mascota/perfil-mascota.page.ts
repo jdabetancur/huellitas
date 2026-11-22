@@ -32,7 +32,7 @@ import { AvisosService } from '../../services/avisos.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { NotificacionesService } from '../../services/notificaciones.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
-import { cuandoTexto, edadTexto } from '../../utils/fechas';
+import { cuandoTexto, edadTexto, hoyISO } from '../../utils/fechas';
 
 /** P2 · Perfil de mascota (RF02 editar/eliminar, RF04 historial, RF08 próximo, RF11/RF12 exportar, RF13 peso). */
 @Component({
@@ -74,7 +74,19 @@ export class PerfilMascotaPage {
   readonly id = input.required<string>();
 
   protected readonly mascota = computed(() => this.datos.obtenerMascota(this.id()));
-  protected readonly historial = computed(() => this.datos.listarEventos(this.id()));
+
+  /** Historial (RF04): lo que ya ocurrió, hasta hoy, del más reciente al más antiguo. */
+  protected readonly historial = computed(() =>
+    this.datos.listarEventos(this.id()).filter((evento) => evento.fecha <= hoyISO()),
+  );
+
+  /** Eventos programados después de hoy (citas, vacunas y desparasitaciones), del más cercano al más lejano. */
+  protected readonly proximosEventos = computed(() =>
+    this.datos
+      .listarEventos(this.id())
+      .filter((evento) => evento.fecha > hoyISO())
+      .sort((a, b) => a.fecha.localeCompare(b.fecha)),
+  );
   protected readonly pesos = computed(() => this.datos.historialPeso(this.id()));
   protected readonly pesoActual = computed(() => this.pesos()[0]?.pesoKg);
   protected readonly vacunas = computed(() => this.historial().filter((e) => e.tipo === 'vacuna').length);

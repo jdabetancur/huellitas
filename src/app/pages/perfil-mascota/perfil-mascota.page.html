@@ -73,6 +73,39 @@
   </ion-card>
   }
 
+  <h3 class="hu-seccion">Próximos eventos</h3>
+  @if (proximosEventos().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (e of proximosEventos(); track e.id) {
+    <ion-item-sliding #deslizableProximo>
+      <ion-item>
+        <div slot="start" class="hu-icono-tipo" [class]="tipos[e.tipo].color">
+          <ion-icon [name]="tipos[e.tipo].icono" aria-hidden="true"></ion-icon>
+        </div>
+        <ion-label class="ion-text-wrap">
+          <h3>{{ titulo(e) }}</h3>
+          <p>{{ e.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(e.fecha) }}</p>
+          @if (repeticion(e.recordatorio?.repetirCadaMeses); as rep) {
+          <p class="recordatorio">
+            <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
+            {{ rep }}
+          </p>
+          }
+        </ion-label>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="eliminarEvento(e, deslizableProximo)">
+          <ion-icon slot="top" name="trash-outline" aria-hidden="true"></ion-icon>
+          Eliminar
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+    }
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">No hay eventos programados.</p>
+  }
+
   <h3 class="hu-seccion">Próximo recordatorio</h3>
   @if (proximo(); as p) {
   <ion-list lines="none" class="hu-lista">

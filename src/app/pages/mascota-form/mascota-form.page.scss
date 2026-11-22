@@ -52,6 +52,7 @@
   color: var(--ion-color-primary-shade);
   border-radius: var(--hu-radio-control);
   padding: 12px 14px;
+  margin: 16px 0;
 
   ion-icon {
     font-size: 22px;
@@ -63,6 +64,62 @@
     margin: 0;
     font-size: 0.9rem;
   }
+}
+
+.encabezado-calendario {
+  margin-bottom: 16px;
+
+  h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 4px 0 8px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+.propuesta {
+  padding: 14px 12px;
+  margin: 12px 0;
+  border: 1px solid var(--ion-color-light-shade);
+  border-radius: var(--hu-radio-control);
+  background: var(--ion-background-color);
+
+  ion-checkbox {
+    font-weight: 600;
+    --size: 20px;
+  }
+}
+
+.nombre-propuesta {
+  font-weight: 600;
+}
+
+.detalle-propuesta {
+  display: block;
+  margin: 8px 0 0 30px;
+  font-size: 0.82rem;
+  color: var(--ion-color-medium);
+}
+
+.descripcion-propuesta {
+  margin: 6px 0 12px 30px;
+  font-size: 0.88rem;
+  color: var(--ion-text-color);
+}
+
+.fecha-propuesta {
+  margin-top: 12px;
+}
+
+.acciones-calendario {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .pie {
