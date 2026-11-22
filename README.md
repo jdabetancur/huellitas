@@ -40,7 +40,7 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF03 | Registrar eventos de salud (vacuna, desparasitación, cita, peso) con fecha y notas | Implementado | — |
 | RF04 | Historial de salud ordenado por fecha | Implementado | — |
 | RF13 | Registrar el peso y verlo como lista de controles | Implementado | — |
-| RF05 | Calendario precargado según especie y edad | En desarrollo | [#3](../../issues/3) |
+| RF05 | Calendario precargado según especie y edad | En revisión ([PR #7](../../pull/7)) | [#3](../../issues/3) |
 | RF06 | Recordatorios únicos o recurrentes | En desarrollo | [#1](../../issues/1) |
 | RF07 | Notificación local el día anterior | En desarrollo | [#2](../../issues/2) |
 | RF08 | Próximos recordatorios de todas las mascotas | En desarrollo | [#4](../../issues/4) |
@@ -48,6 +48,26 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF09 | Jornada de vacunación con un toque | Entrega 3 | — |
 | RF11 | Exportar historial en PDF | Entrega 3 | — |
 | RF12 | Exportar e importar perfil en CSV | Entrega 3 | — |
+
+## Pendientes
+
+### En desarrollo (Entrega 2)
+
+| RF | Qué falta | Issue |
+|---|---|---|
+| RF05 | Fusionar el calendario precargado, que está en revisión en el [PR #7](../../pull/7) | [#3](../../issues/3) |
+| RF06 | Reprogramar automáticamente la siguiente repetición cuando se cumple la fecha de un recordatorio recurrente | [#1](../../issues/1) |
+| RF07 | Programar la notificación de cada recordatorio para el día anterior a las 9:00 a. m. y cancelarla al editar o eliminar | [#2](../../issues/2) |
+| RF08 | Mostrar las próximas repeticiones y los recordatorios vencidos, y permitir marcarlos como hechos | [#4](../../issues/4) |
+| RF10 | Tomar o adjuntar la foto del carné en Nuevo evento y verla en grande desde el historial | [#5](../../issues/5) |
+
+### Entrega 3
+
+| RF | Qué falta |
+|---|---|
+| RF09 | Agregar con un toque una jornada de vacunación de la secretaría de salud, con fecha y lugar |
+| RF11 | Exportar el historial de una mascota en PDF para compartirlo con el veterinario |
+| RF12 | Exportar e importar el perfil completo de una mascota en CSV |
 
 Busca `TODO(RFxx)` en el código para ver exactamente qué falta de cada requerimiento.
 
