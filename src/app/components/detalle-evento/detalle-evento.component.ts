@@ -52,8 +52,12 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
               <dd>
                 {{ r.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(r.fecha) }}
                 <span class="hu-nota bloque">
-                  {{ repeticion(r.repetirCadaMeses) }} · aviso el {{ aviso(r.fecha) | date: "d 'de' MMMM" }} a las 9:00
-                  a. m.
+                  {{ repeticion(r.repetirCadaMeses) }} ·
+                  @if (r.notificacionId !== undefined) {
+                    aviso el {{ aviso(r.fecha) | date: "d 'de' MMMM" }} a las 9:00 a. m.
+                  } @else {
+                    sin aviso en el celular (activa las notificaciones de Huellitas)
+                  }
                 </span>
               </dd>
             } @else {

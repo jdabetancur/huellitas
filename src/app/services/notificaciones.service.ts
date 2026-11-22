@@ -4,9 +4,43 @@ import { Capacitor } from '@capacitor/core';
 import { LocalNotifications } from '@capacitor/local-notifications';
 
 import type { EventoSalud, Mascota } from '../models';
+import { TIPOS_EVENTO } from '../models';
+import { aISO, desdeISO, sumarDias } from '../utils/fechas';
 import { nuevoIdNotificacion } from '../utils/ids';
 
+import { AvisosService } from './avisos.service';
+
 export const CANAL_RECORDATORIOS = 'recordatorios';
+
+/** Hora del aviso del día anterior (RF07). */
+export const HORA_AVISO = 9;
+
+/**
+ * Momento en que se avisa un recordatorio (RF07):
+ * - El día anterior a `fechaRecordatorio` a las 9:00 a. m. (hora local).
+ * - Si esa hora ya pasó pero el recordatorio sigue siendo mañana (p. ej. se guarda a las 10 a. m. un
+ *   recordatorio para mañana), el aviso sale en 1 minuto: así el usuario igual recibe el aviso el día anterior.
+ * - Si el recordatorio es hoy o ya pasó, no hay aviso (undefined).
+ */
+export function momentoAviso(fechaRecordatorio: string, ahora = new Date()): Date | undefined {
+  if (fechaRecordatorio <= aISO(ahora)) return undefined;
+  const aviso = desdeISO(sumarDias(fechaRecordatorio, -1));
+  aviso.setHours(HORA_AVISO, 0, 0, 0);
+  return aviso > ahora ? aviso : new Date(ahora.getTime() + 60_000);
+}
+
+/** Texto del aviso: «Mañana: Vacuna de Toby» y, en el cuerpo, la primera línea de las notas. */
+export function textoAviso(
+  evento: Pick<EventoSalud, 'tipo' | 'notas'>,
+  mascota: Pick<Mascota, 'nombre'>,
+): { titulo: string; cuerpo: string } {
+  const detalle = evento.notas?.split('\n')[0].trim();
+  const abrir = `Toca para ver el perfil de ${mascota.nombre}.`;
+  return {
+    titulo: `Mañana: ${TIPOS_EVENTO[evento.tipo].etiqueta} de ${mascota.nombre}`,
+    cuerpo: detalle ? `${detalle}. ${abrir}` : abrir,
+  };
+}
 
 export interface NotificacionAProgramar {
   id?: number;
@@ -26,13 +60,16 @@ export interface ResultadoPrueba {
 
 /**
  * Notificaciones locales (RF07). Las programa el propio celular: no hay servidor ni internet (RNF02, RNF06).
- * Ya funciona: permiso, canal de Android, programar, cancelar, prueba a 2 minutos y abrir el perfil al tocar.
+ * Permiso, canal de Android, programar, cancelar, aviso del día anterior a las 9:00 a. m., prueba a 2 minutos
+ * y abrir el perfil al tocar.
  * Sobrevive al reinicio: el plugin registra un BroadcastReceiver de BOOT_COMPLETED que reprograma las pendientes.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificacionesService {
   private readonly router = inject(Router);
+  private readonly avisos = inject(AvisosService);
   private iniciado = false;
+  private avisoAlarmaMostrado = false;
 
   /** Se llama una vez al abrir la app (ver app.config). */
   async iniciar(): Promise<void> {
@@ -134,28 +171,48 @@ export class NotificacionesService {
   }
 
   /**
-   * TODO(RF07): programar la notificación del recordatorio de un evento.
-   * - Fecha: el día anterior a `evento.recordatorio.fecha`, a las 9:00 a. m. (caso de prueba 2).
-   *   Si esa hora ya pasó (p. ej. el recordatorio es mañana y ya son las 10 a. m.), decidir qué hacer y documentarlo.
-   * - Texto sugerido: "Mañana: Vacuna de Toby" / cuerpo con las notas del evento.
-   * - Llamar a `programar()` con `mascotaId` y `eventoId` en extra, y devolver el id para guardarlo en
-   *   `evento.recordatorio.notificacionId` (NuevoEventoPage ya lo guarda si se devuelve un número).
-   * - Al editar o eliminar el evento hay que cancelar la notificación (MascotasService ya llama a `cancelar()`).
-   * - Si `alarmaExactaPermitida()` es false, avisar al usuario y ofrecer `abrirAjusteAlarmaExacta()`.
+   * RF07 (caso de prueba 2): programa la notificación del recordatorio de un evento para el día anterior
+   * a las 9:00 a. m. (ver `momentoAviso`) y devuelve su id, que el llamador guarda en
+   * `evento.recordatorio.notificacionId`.
+   * No pide el permiso (eso lo hacen las pantallas, con contexto para el usuario): si no está concedido,
+   * o el recordatorio ya no tiene aviso posible, devuelve undefined y el recordatorio se guarda sin aviso.
+   * Al editar o eliminar el evento, P3 y MascotasService cancelan la notificación con `cancelar()`.
    */
   async programarRecordatorio(evento: EventoSalud, mascota: Mascota): Promise<number | undefined> {
-    console.warn('[Notificaciones] TODO(RF07) programarRecordatorio', evento.id, mascota.nombre);
-    return undefined;
+    const fecha = evento.recordatorio?.fecha;
+    if (!fecha) return undefined;
+    const cuando = momentoAviso(fecha);
+    if (!cuando) return undefined;
+    try {
+      const { display } = await LocalNotifications.checkPermissions();
+      if (display !== 'granted') return undefined;
+      const { titulo, cuerpo } = textoAviso(evento, mascota);
+      return await this.programar({ titulo, cuerpo, fecha: cuando, mascotaId: mascota.id, eventoId: evento.id });
+    } catch (error) {
+      console.warn('[Notificaciones] No se pudo programar el recordatorio', evento.id, error);
+      return undefined;
+    }
   }
 
   /**
-   * TODO(RF06): reprogramar los recordatorios recurrentes (caso de prueba 6).
-   * Llamarlo al abrir la app y al recibir una notificación ('localNotificationReceived'): para cada evento
-   * con `recordatorio.repetirCadaMeses` cuya fecha ya se cumplió, calcular la siguiente con
-   * `RecordatoriosService.calcularProximaFecha`, guardarla con `MascotasService.actualizarEvento` y
-   * programar su notificación. Alternativa: dejar programadas desde el inicio las próximas N repeticiones.
+   * Si Android no permite alarmas exactas, explica que el aviso puede llegar tarde y ofrece abrir el ajuste.
+   * Se muestra como mucho una vez por sesión, después de programar un recordatorio desde una pantalla.
    */
-  async reprogramarRecurrentes(): Promise<void> {
-    // Pendiente RF06.
+  async avisarSiAlarmaInexacta(): Promise<void> {
+    if (this.avisoAlarmaMostrado || (await this.alarmaExactaPermitida())) return;
+    this.avisoAlarmaMostrado = true;
+    const rol = await this.avisos.alerta(
+      'El aviso puede retrasarse',
+      'Android no permite alarmas exactas para Huellitas, así que el aviso del día anterior puede llegar ' +
+        'más tarde de las 9:00 a. m. Para que llegue a tiempo, activa "Alarmas y recordatorios" para Huellitas.',
+      [
+        { text: 'Ahora no', role: 'cancel' },
+        { text: 'Abrir ajuste', role: 'confirm' },
+      ],
+    );
+    if (rol === 'confirm') await this.abrirAjusteAlarmaExacta();
   }
+
+  // RF06: la reprogramación de recurrentes vive en RecordatoriosService.reprogramarRecurrentes(),
+  // que llama a programarRecordatorio() (aquí no se puede inyectar MascotasService: dependencia circular).
 }

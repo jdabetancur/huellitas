@@ -285,6 +285,9 @@ export class MascotaFormPage implements OnInit {
     this.guardando.set(true);
 
     try {
+      // RF07: cada evento del calendario tiene aviso el día anterior; el permiso se pide una sola vez aquí.
+      const conPermiso = seleccionados.length ? await this.notificaciones.asegurarPermiso() : false;
+
       for (const { evento: propuesta, index } of seleccionados) {
         if (this.eventosGuardados().includes(index)) continue;
 
@@ -312,11 +315,13 @@ export class MascotaFormPage implements OnInit {
       }
 
       const cantidadGuardada = this.eventosGuardados().length;
+      if (cantidadGuardada && conPermiso) await this.notificaciones.avisarSiAlarmaInexacta();
 
-      await this.avisos.mensaje(
-        cantidadGuardada ? 'Calendario guardado correctamente.' : 'No se agregaron eventos al calendario.',
-        'success',
-      );
+      let mensaje = cantidadGuardada ? 'Calendario guardado correctamente.' : 'No se agregaron eventos al calendario.';
+      if (cantidadGuardada && !conPermiso) {
+        mensaje = 'Calendario guardado. Sin permiso de notificaciones no recibirás los avisos del día anterior.';
+      }
+      await this.avisos.mensaje(mensaje, conPermiso || !cantidadGuardada ? 'success' : 'dark');
 
       this.nav.back();
     } catch (error) {

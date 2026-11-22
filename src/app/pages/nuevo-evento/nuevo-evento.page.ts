@@ -201,14 +201,22 @@ export class NuevoEventoPage implements OnInit {
       } else {
         evento = await this.datos.agregarEvento({ mascotaId: mascota.id, ...datos });
       }
+      let sinAviso = false;
       if (recordatorio) {
-        // TODO(RF07): programarRecordatorio aún no programa nada; cuando devuelva el id se guarda aquí.
+        // RF07: aviso el día anterior a las 9:00 a. m.; su id se guarda para cancelarlo al editar o eliminar.
         const notificacionId = await this.notificaciones.programarRecordatorio(evento, mascota);
         if (notificacionId !== undefined) {
           await this.datos.actualizarEvento(evento.id, { recordatorio: { ...recordatorio, notificacionId } });
+          await this.notificaciones.avisarSiAlarmaInexacta();
+        } else {
+          sinAviso = true;
         }
       }
-      await this.avisos.mensaje(eventoId ? 'Cambios guardados.' : 'Evento guardado.', 'success');
+      const guardado = eventoId ? 'Cambios guardados.' : 'Evento guardado.';
+      await this.avisos.mensaje(
+        sinAviso ? `${guardado} Sin permiso de notificaciones no recibirás el aviso del día anterior.` : guardado,
+        sinAviso ? 'dark' : 'success',
+      );
       this.nav.back();
     } finally {
       this.guardando.set(false);

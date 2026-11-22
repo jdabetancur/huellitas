@@ -15,6 +15,7 @@ import { AppComponent } from './app/app.component';
 import { routes } from './app/app.routes';
 import { MascotasService } from './app/services/mascotas.service';
 import { NotificacionesService } from './app/services/notificaciones.service';
+import { RecordatoriosService } from './app/services/recordatorios.service';
 import { registrarIconos } from './app/utils/iconos';
 
 registerLocaleData(localeEsCo);
@@ -27,7 +28,14 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular({ backButtonText: '', mode: 'md' }),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
     // Antes de mostrar la primera pantalla: cargar los datos guardados y preparar las notificaciones.
-    provideAppInitializer(() => inject(MascotasService).iniciar()),
+    // RF06: con los datos ya cargados, se reprograman los recordatorios recurrentes vencidos.
+    provideAppInitializer(() => {
+      const recordatorios = inject(RecordatoriosService);
+      return inject(MascotasService)
+        .iniciar()
+        .then(() => recordatorios.iniciar())
+        .catch((error: unknown) => console.warn('[Inicio] No se pudieron reprogramar los recordatorios', error));
+    }),
     provideAppInitializer(() => inject(NotificacionesService).iniciar()),
   ],
 });

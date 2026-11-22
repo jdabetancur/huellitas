@@ -41,8 +41,8 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF04 | Historial de salud ordenado por fecha | Implementado | — |
 | RF13 | Registrar el peso y verlo como lista de controles | Implementado | — |
 | RF05 | Calendario precargado según especie y edad | Implementado | [#3](../../issues/3) |
-| RF06 | Recordatorios únicos o recurrentes | En desarrollo | [#1](../../issues/1) |
-| RF07 | Notificación local el día anterior | En desarrollo | [#2](../../issues/2) |
+| RF06 | Recordatorios únicos o recurrentes | Implementado | [#1](../../issues/1) |
+| RF07 | Notificación local el día anterior | Implementado | [#2](../../issues/2) |
 | RF08 | Próximos recordatorios de todas las mascotas | En desarrollo | [#4](../../issues/4) |
 | RF10 | Foto del carné asociada a un evento | En desarrollo | [#5](../../issues/5) |
 | RF09 | Jornada de vacunación con un toque | Entrega 3 | — |
@@ -55,8 +55,6 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 
 | RF | Qué falta | Issue |
 |---|---|---|
-| RF06 | Reprogramar automáticamente la siguiente repetición cuando se cumple la fecha de un recordatorio recurrente | [#1](../../issues/1) |
-| RF07 | Programar la notificación de cada recordatorio para el día anterior a las 9:00 a. m. | [#2](../../issues/2) |
 | RF08 | Mostrar las próximas repeticiones y los recordatorios vencidos, y permitir marcarlos como hechos | [#4](../../issues/4) |
 | RF10 | Tomar o adjuntar la foto del carné en Nuevo evento y verla en grande desde el historial | [#5](../../issues/5) |
 
@@ -101,6 +99,17 @@ Un punto (●) indica que el requerimiento se cumple o se inicia en esa pantalla
 | Detalle de evento o recordatorio | hoja inferior abierta desde P1, P2 y P5 | `src/app/components/detalle-evento/` |
 
 Al tocar una notificación se abre `/mascota/:id` con el `mascotaId` que viaja en `extra` (ver `NotificacionesService.iniciar`).
+
+**Recordatorios recurrentes (RF06).** Un recordatorio sin `repetirCadaMeses` es único. Uno con `repetirCadaMeses` se repite: cuando su fecha ya pasó, `RecordatoriosService.reprogramarRecurrentes()` lo mueve a la siguiente repetición futura (p. ej. desparasitación del 10 de noviembre cada 3 meses → 10 de febrero), cancela la notificación anterior y programa la nueva con `NotificacionesService.programarRecordatorio` (RF07). Se ejecuta al abrir la app, al volver a ella y al recibir una notificación. El evento original queda en el historial con su fecha; solo avanza el recordatorio. Pruebas: `src/app/services/recordatorios.service.spec.ts`.
+
+**Aviso el día anterior (RF07).** `NotificacionesService.programarRecordatorio` programa una notificación local para el día anterior al recordatorio a las 9:00 a. m. (hora del celular), con el título «Mañana: Vacuna de Toby» y la primera línea de las notas en el cuerpo; su id se guarda en `recordatorio.notificacionId` y se cancela al editar o eliminar el evento o la mascota. Reglas (`momentoAviso`):
+
+- Si las 9:00 a. m. del día anterior ya pasaron pero el recordatorio sigue siendo mañana (p. ej. se guarda a las 10 a. m. uno para mañana), el aviso sale en 1 minuto.
+- Un recordatorio de hoy o pasado no tiene aviso.
+- El permiso se pide al activar «Recordarme» (P3) o al guardar el calendario precargado (P4). Sin permiso, el recordatorio se guarda igual, sin aviso, y la hoja de detalle lo indica. Al abrir la app se programan los avisos que falten si el permiso ya está concedido (incluidos los datos de ejemplo).
+- Si Android no permite alarmas exactas, se avisa una vez por sesión y se ofrece abrir el ajuste «Alarmas y recordatorios».
+
+Pruebas: `src/app/services/notificaciones.service.spec.ts`.
 
 ## Estructura de carpetas
 
