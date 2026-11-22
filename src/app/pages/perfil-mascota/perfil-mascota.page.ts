@@ -75,14 +75,16 @@ export class PerfilMascotaPage {
 
   protected readonly mascota = computed(() => this.datos.obtenerMascota(this.id()));
 
+  /** Historial (RF04): lo que ya ocurrió, hasta hoy, del más reciente al más antiguo. */
   protected readonly historial = computed(() =>
     this.datos.listarEventos(this.id()).filter((evento) => evento.fecha <= hoyISO()),
   );
 
-  protected readonly calendario = computed(() =>
+  /** Eventos programados después de hoy (citas, vacunas y desparasitaciones), del más cercano al más lejano. */
+  protected readonly proximosEventos = computed(() =>
     this.datos
       .listarEventos(this.id())
-      .filter((evento) => evento.fecha >= hoyISO() && (evento.tipo === 'vacuna' || evento.tipo === 'desparasitacion'))
+      .filter((evento) => evento.fecha > hoyISO())
       .sort((a, b) => a.fecha.localeCompare(b.fecha)),
   );
   protected readonly pesos = computed(() => this.datos.historialPeso(this.id()));

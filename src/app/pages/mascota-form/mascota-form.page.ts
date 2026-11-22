@@ -1,4 +1,4 @@
-﻿import type { OnInit } from '@angular/core';
+import type { OnInit } from '@angular/core';
 import { Component, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -21,14 +21,14 @@ import {
 } from '@ionic/angular';
 
 import { AvatarComponent } from '../../components/avatar/avatar.component';
-import type { Especie, EventoSalud, Mascota, Sexo } from '../../models';
+import type { Especie, Mascota, Sexo } from '../../models';
 import { ESPECIES, SEXOS } from '../../models';
 import { AvisosService } from '../../services/avisos.service';
 import { CalendarioService, type EventoPropuesto } from '../../services/calendario.service';
 import { FotoService } from '../../services/foto.service';
 import { MascotasService } from '../../services/mascotas.service';
-import { plantillasCalendario } from '../../services/plantillas-calendario';
-import { esCachorro, hoyISO } from '../../utils/fechas';
+import { NotificacionesService } from '../../services/notificaciones.service';
+import { esCachorro, hoyISO, sumarDias } from '../../utils/fechas';
 import { noFutura, textoRequerido } from '../../utils/validadores';
 
 /** P4 · Nueva / editar mascota (RF01, RF02 y RF05). */
@@ -60,6 +60,7 @@ export class MascotaFormPage implements OnInit {
   private readonly fotos = inject(FotoService);
   private readonly calendario = inject(CalendarioService);
   private readonly avisos = inject(AvisosService);
+  private readonly notificaciones = inject(NotificacionesService);
   private readonly nav = inject(NavController);
 
   readonly id = input<string>();
@@ -67,6 +68,7 @@ export class MascotaFormPage implements OnInit {
   protected readonly especies = Object.entries(ESPECIES) as [Especie, string][];
   protected readonly sexos = Object.entries(SEXOS) as [Sexo, string][];
   protected readonly hoy = hoyISO();
+  protected readonly manana = sumarDias(hoyISO(), 1);
 
   protected readonly editando = computed(() => !!this.id());
   protected readonly guardando = signal(false);
@@ -188,12 +190,13 @@ export class MascotaFormPage implements OnInit {
       if (id) {
         const editada = await this.datos.editarMascota(id, datos);
 
-        if (this.mascotaOriginal) {
-          await this.actualizarCalendarioSiCambio(this.mascotaOriginal, editada);
-        }
-
         if (this.fotoOriginal && this.fotoOriginal !== datos.fotoUrl) {
           await this.fotos.eliminar(this.fotoOriginal);
+        }
+
+        // Si cambió la especie o la etapa (cachorro/adulto), se ofrece revisar un calendario nuevo.
+        if (this.mascotaOriginal && (await this.ofrecerNuevoCalendario(this.mascotaOriginal, editada))) {
+          return;
         }
 
         await this.avisos.mensaje('Cambios guardados.', 'success');
@@ -217,70 +220,48 @@ export class MascotaFormPage implements OnInit {
       this.guardando.set(false);
     }
   }
+
   /**
-   * Actualiza los eventos futuros cuando cambia la plantilla de la mascota.
-   * Conserva los eventos pasados y los registros manuales.
+   * Al editar: si la mascota cambió de plantilla (especie o etapa), pregunta si quiere revisar un
+   * calendario nuevo. Si acepta, se retiran los eventos futuros de la plantilla anterior y se muestran
+   * las nuevas propuestas para que las ajuste. Devuelve true si se muestran las propuestas.
    */
-  private async actualizarCalendarioSiCambio(anterior: Mascota, nueva: Mascota): Promise<void> {
-    const etapaAnterior = esCachorro(anterior.fechaNacimiento) ? 'cachorro' : 'adulto';
+  private async ofrecerNuevoCalendario(anterior: Mascota, nueva: Mascota): Promise<boolean> {
+    const origenAnterior = this.calendario.origenDe(anterior);
+    const origenNuevo = this.calendario.origenDe(nueva);
+    if (origenAnterior === origenNuevo) return false;
 
-    const etapaNueva = esCachorro(nueva.fechaNacimiento) ? 'cachorro' : 'adulto';
-
-    if (anterior.especie === 'otro') return;
-
-    const origenAnterior = `${anterior.especie}.${etapaAnterior}`;
-    const origenNuevo = nueva.especie === 'otro' ? undefined : `${nueva.especie}.${etapaNueva}`;
-
-    // Si no cambió la plantilla, no hacemos nada.
-    if (origenAnterior === origenNuevo) return;
-
-    const plantillaAnterior = plantillasCalendario[anterior.especie][etapaAnterior];
+    const propuestas = await this.calendario.proponer(nueva);
     const hoy = hoyISO();
+    const anteriores = origenAnterior
+      ? this.datos
+          .listarEventos(nueva.id)
+          .filter((evento) => evento.origenPlantilla === origenAnterior && evento.fecha > hoy)
+      : [];
+    if (!propuestas.length && !anteriores.length) return false;
 
-    // Identificar solamente eventos futuros de la plantilla anterior.
-    const eventosAnteriores = this.datos.listarEventos(nueva.id).filter((evento: EventoSalud) => {
-      if (evento.fecha < hoy) return false;
+    const reemplazo =
+      anteriores.length === 1
+        ? 'El evento futuro del calendario anterior se reemplazará'
+        : `Los ${anteriores.length} eventos futuros del calendario anterior se reemplazarán`;
+    const texto = anteriores.length
+      ? `Cambió la especie o la edad de ${nueva.nombre}. ${reemplazo} por un calendario nuevo que podrás revisar.`
+      : `Cambió la especie o la edad de ${nueva.nombre}. ¿Quieres revisar un calendario de vacunas y desparasitaciones?`;
+    const rol = await this.avisos.alerta('Nuevo calendario', texto, [
+      { text: 'Ahora no', role: 'cancel' },
+      { text: 'Revisar', role: 'confirm' },
+    ]);
+    if (rol !== 'confirm') return false;
 
-      // Eventos nuevos: identificación mediante su marca de origen.
-      if (evento.origenPlantilla) {
-        return evento.origenPlantilla === origenAnterior;
-      }
-
-      // Eventos antiguos: identificación conservadora por descripción,
-      // tipo y recordatorio asociado a la fecha del evento.
-      return (
-        evento.recordatorio?.fecha === evento.fecha &&
-        plantillaAnterior.some((plantilla) => plantilla.tipo === evento.tipo && plantilla.descripcion === evento.notas)
-      );
-    });
-
-    // Si no había eventos de plantilla, no crear un calendario nuevo.
-    if (!eventosAnteriores.length) return;
-
-    // Retirar los eventos futuros de la plantilla anterior.
-    for (const evento of eventosAnteriores) {
+    for (const evento of anteriores) {
       await this.datos.eliminarEvento(evento.id);
     }
+    if (!propuestas.length) return false;
 
-    // Si la nueva especie es "otro", no hay plantilla que proponer.
-    if (nueva.especie === 'otro') return;
-
-    // Crear los eventos correspondientes a la nueva plantilla.
-    const nuevasPropuestas = await this.calendario.proponer(nueva);
-
-    for (const propuesta of nuevasPropuestas) {
-      await this.datos.agregarEvento({
-        mascotaId: nueva.id,
-        origenPlantilla: propuesta.origenPlantilla,
-        tipo: propuesta.tipo,
-        fecha: propuesta.fecha,
-        notas: propuesta.notas,
-        recordatorio: {
-          fecha: propuesta.fecha,
-          repetirCadaMeses: propuesta.repetirCadaMeses || undefined,
-        },
-      });
-    }
+    this.eventosGuardados.set([]);
+    this.mascotaRegistrada.set(nueva);
+    this.propuestas.set(propuestas);
+    return true;
   }
 
   protected async guardarCalendario(): Promise<void> {
@@ -296,6 +277,11 @@ export class MascotaFormPage implements OnInit {
       return;
     }
 
+    if (seleccionados.some(({ evento }) => evento.fecha <= hoyISO())) {
+      await this.avisos.mensaje('Las fechas del calendario deben ser posteriores a hoy.', 'danger');
+      return;
+    }
+
     this.guardando.set(true);
 
     try {
@@ -307,14 +293,20 @@ export class MascotaFormPage implements OnInit {
           repetirCadaMeses: propuesta.repetirCadaMeses || undefined,
         };
 
-        await this.datos.agregarEvento({
+        // En el historial el evento se ve como "Vacuna · Vacuna antirrábica".
+        const evento = await this.datos.agregarEvento({
           mascotaId: mascota.id,
           origenPlantilla: propuesta.origenPlantilla,
           tipo: propuesta.tipo,
           fecha: propuesta.fecha,
-          notas: propuesta.notas,
+          notas: propuesta.nombre,
           recordatorio,
         });
+
+        const notificacionId = await this.notificaciones.programarRecordatorio(evento, mascota);
+        if (notificacionId !== undefined) {
+          await this.datos.actualizarEvento(evento.id, { recordatorio: { ...recordatorio, notificacionId } });
+        }
 
         this.eventosGuardados.update((lista) => [...lista, index]);
       }
@@ -322,7 +314,7 @@ export class MascotaFormPage implements OnInit {
       const cantidadGuardada = this.eventosGuardados().length;
 
       await this.avisos.mensaje(
-        cantidadGuardada ? 'Calendario guardado correctamente.' : 'Mascota registrada sin eventos en el calendario.',
+        cantidadGuardada ? 'Calendario guardado correctamente.' : 'No se agregaron eventos al calendario.',
         'success',
       );
 
@@ -337,7 +329,7 @@ export class MascotaFormPage implements OnInit {
   }
 
   protected async omitirCalendario(): Promise<void> {
-    await this.avisos.mensaje('Mascota registrada. No se agregaron eventos al calendario.', 'dark');
+    await this.avisos.mensaje('No se agregaron eventos al calendario.', 'dark');
 
     this.nav.back();
   }

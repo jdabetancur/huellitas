@@ -1,9 +1,21 @@
+/**
+ * Plantillas del calendario precargado (RF05). Son orientativas: la app recuerda al usuario
+ * verificarlas con su veterinario.
+ *
+ * - Cachorros: `edadSemanas` es la edad a la que corresponde el evento; la fecha se calcula
+ *   desde la fecha de nacimiento.
+ * - Adultos: `diasDesdeRegistro` ubica el primer evento a partir de hoy (no depende de la edad).
+ * - `repetirCadaMeses`: el evento se vuelve un recordatorio recurrente (RF06).
+ */
 export interface PlantillaEvento {
   nombre: string;
   tipo: 'vacuna' | 'desparasitacion';
+  /** Texto de referencia que se muestra en la propuesta. */
   edad: string;
-  diasDesdeRegistro: number;
   descripcion: string;
+  edadSemanas?: number;
+  diasDesdeRegistro?: number;
+  repetirCadaMeses?: number;
 }
 
 export const plantillasCalendario = {
@@ -13,51 +25,55 @@ export const plantillasCalendario = {
         nombre: 'Primera vacuna (puppy)',
         tipo: 'vacuna',
         edad: '6 semanas',
-        diasDesdeRegistro: 0,
+        edadSemanas: 6,
         descripcion: 'Inicio del esquema de vacunación.',
-      },
-      {
-        nombre: 'Vacuna múltiple',
-        tipo: 'vacuna',
-        edad: '8 semanas',
-        diasDesdeRegistro: 14,
-        descripcion: 'Continuación del esquema de vacunación.',
       },
       {
         nombre: 'Desparasitación',
         tipo: 'desparasitacion',
-        edad: 'Según valoración veterinaria',
-        diasDesdeRegistro: 21,
+        edad: 'Desde las 8 semanas, cada 3 meses',
+        edadSemanas: 8,
+        repetirCadaMeses: 3,
         descripcion: 'Control de parásitos internos.',
+      },
+      {
+        nombre: 'Vacuna múltiple',
+        tipo: 'vacuna',
+        edad: '9 semanas',
+        edadSemanas: 9,
+        descripcion: 'Continuación del esquema de vacunación.',
       },
       {
         nombre: 'Refuerzo de vacuna múltiple',
         tipo: 'vacuna',
         edad: '12 semanas',
-        diasDesdeRegistro: 42,
+        edadSemanas: 12,
         descripcion: 'Refuerzo del esquema de vacunación.',
       },
       {
         nombre: 'Vacuna antirrábica',
         tipo: 'vacuna',
-        edad: 'Desde las 12 semanas',
-        diasDesdeRegistro: 56,
+        edad: 'Desde las 16 semanas, cada año',
+        edadSemanas: 16,
+        repetirCadaMeses: 12,
         descripcion: 'Aplicación según indicación veterinaria.',
       },
     ],
     adulto: [
       {
-        nombre: 'Revisión del esquema de vacunación',
+        nombre: 'Refuerzo anual de vacunas',
         tipo: 'vacuna',
-        edad: 'Adulto',
-        diasDesdeRegistro: 0,
-        descripcion: 'Verificar vacunas pendientes y refuerzos.',
+        edad: 'Adulto, cada año',
+        diasDesdeRegistro: 30,
+        repetirCadaMeses: 12,
+        descripcion: 'Ajusta la fecha según el carné de vacunación.',
       },
       {
         nombre: 'Desparasitación',
         tipo: 'desparasitacion',
-        edad: 'Adulto',
-        diasDesdeRegistro: 30,
+        edad: 'Adulto, cada 3 meses',
+        diasDesdeRegistro: 14,
+        repetirCadaMeses: 3,
         descripcion: 'Según valoración y riesgo del animal.',
       },
     ],
@@ -67,38 +83,49 @@ export const plantillasCalendario = {
       {
         nombre: 'Primera vacuna triple felina',
         tipo: 'vacuna',
-        edad: '6-8 semanas',
-        diasDesdeRegistro: 0,
+        edad: '8 semanas',
+        edadSemanas: 8,
         descripcion: 'Inicio del esquema de vacunación.',
+      },
+      {
+        nombre: 'Desparasitación',
+        tipo: 'desparasitacion',
+        edad: 'Desde las 8 semanas, cada 3 meses',
+        edadSemanas: 8,
+        repetirCadaMeses: 3,
+        descripcion: 'Control de parásitos internos.',
       },
       {
         nombre: 'Refuerzo triple felina',
         tipo: 'vacuna',
-        edad: '9-12 semanas',
-        diasDesdeRegistro: 21,
+        edad: '12 semanas',
+        edadSemanas: 12,
         descripcion: 'Continuación del esquema de vacunación.',
       },
       {
         nombre: 'Vacuna antirrábica',
         tipo: 'vacuna',
-        edad: 'Según edad e indicación veterinaria',
-        diasDesdeRegistro: 42,
+        edad: 'Desde las 16 semanas, cada año',
+        edadSemanas: 16,
+        repetirCadaMeses: 12,
         descripcion: 'Aplicación según recomendación veterinaria.',
       },
     ],
     adulto: [
       {
-        nombre: 'Revisión del esquema de vacunación',
+        nombre: 'Refuerzo anual de vacunas',
         tipo: 'vacuna',
-        edad: 'Adulto',
-        diasDesdeRegistro: 0,
-        descripcion: 'Verificar vacunas y refuerzos pendientes.',
+        edad: 'Adulto, cada año',
+        diasDesdeRegistro: 30,
+        repetirCadaMeses: 12,
+        descripcion: 'Ajusta la fecha según el carné de vacunación.',
       },
       {
         nombre: 'Desparasitación',
         tipo: 'desparasitacion',
-        edad: 'Adulto',
-        diasDesdeRegistro: 30,
+        edad: 'Adulto, cada 3 meses',
+        diasDesdeRegistro: 14,
+        repetirCadaMeses: 3,
         descripcion: 'Según valoración veterinaria.',
       },
     ],

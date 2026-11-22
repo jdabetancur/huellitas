@@ -1,4 +1,4 @@
-﻿<ion-header>
+<ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-back-button [defaultHref]="id() ? '/mascota/' + id() : '/tabs/mascotas'"></ion-back-button>
@@ -136,6 +136,7 @@
       labelPlacement="stacked"
       fill="outline"
       [value]="propuesta.fecha"
+      [min]="manana"
       [disabled]="!propuesta.incluir"
       (ionChange)="cambiarFecha(i, $event.detail.value ?? '')"
     ></ion-input>
