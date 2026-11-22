@@ -16,7 +16,7 @@
   </p>
 
   @if (proximo(); as p) {
-  <ion-card class="destacada" button [routerLink]="['/mascota', p.mascota.id]" routerDirection="forward">
+  <ion-card class="destacada" button (click)="verRecordatorio(p.evento.id)">
     <ion-card-content>
       <span class="etiqueta">Próximo recordatorio</span>
       <h2>{{ titulo(p.evento) }}</h2>

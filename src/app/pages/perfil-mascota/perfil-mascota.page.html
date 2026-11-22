@@ -78,7 +78,7 @@
   <ion-list lines="none" class="hu-lista">
     @for (e of proximosEventos(); track e.id) {
     <ion-item-sliding #deslizableProximo>
-      <ion-item>
+      <ion-item button detail="true" (click)="verEvento(e.id)">
         <div slot="start" class="hu-icono-tipo" [class]="tipos[e.tipo].color">
           <ion-icon [name]="tipos[e.tipo].icono" aria-hidden="true"></ion-icon>
         </div>
@@ -109,7 +109,7 @@
   <h3 class="hu-seccion">Próximo recordatorio</h3>
   @if (proximo(); as p) {
   <ion-list lines="none" class="hu-lista">
-    <ion-item>
+    <ion-item button detail="true" (click)="verEvento(p.evento.id)">
       <div slot="start" class="hu-icono-tipo" [class]="tipos[p.evento.tipo].color">
         <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
       </div>
@@ -130,7 +130,7 @@
   @if (pesos().length) {
   <ion-list lines="none" class="hu-lista">
     @for (p of pesos(); track p.id; let i = $index) {
-    <ion-item>
+    <ion-item button detail="true" (click)="verEvento(p.id)">
       <div slot="start" class="hu-icono-tipo medium">
         <ion-icon name="barbell-outline" aria-hidden="true"></ion-icon>
       </div>
@@ -156,7 +156,7 @@
   <ion-list lines="none" class="hu-lista">
     @for (e of historial(); track e.id) {
     <ion-item-sliding #deslizable>
-      <ion-item>
+      <ion-item button detail="true" (click)="verEvento(e.id)">
         <div slot="start" class="hu-icono-tipo" [class]="tipos[e.tipo].color">
           <ion-icon [name]="tipos[e.tipo].icono" aria-hidden="true"></ion-icon>
         </div>
@@ -186,7 +186,7 @@
     </ion-item-sliding>
     }
   </ion-list>
-  <p class="hu-nota ayuda">Desliza un evento hacia la izquierda para eliminarlo.</p>
+  <p class="hu-nota ayuda">Toca un evento para verlo, editarlo o eliminarlo.</p>
   } @else {
   <p class="hu-nota sin-datos">El historial está vacío. Registra el primer evento con «+ Evento».</p>
   } } @else {

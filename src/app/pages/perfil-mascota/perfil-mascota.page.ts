@@ -29,6 +29,7 @@ import { ExportarModalComponent } from '../../components/exportar-modal/exportar
 import type { EventoSalud } from '../../models';
 import { ESPECIES, OPCIONES_REPETIR, SEXOS, TIPOS_EVENTO, tituloEvento } from '../../models';
 import { AvisosService } from '../../services/avisos.service';
+import { DetalleEventoService } from '../../services/detalle-evento.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { NotificacionesService } from '../../services/notificaciones.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
@@ -68,6 +69,7 @@ export class PerfilMascotaPage {
   private readonly recordatorios = inject(RecordatoriosService);
   private readonly notificaciones = inject(NotificacionesService);
   private readonly avisos = inject(AvisosService);
+  private readonly detalleEvento = inject(DetalleEventoService);
   private readonly modales = inject(ModalController);
   private readonly nav = inject(NavController);
 
@@ -142,15 +144,15 @@ export class PerfilMascotaPage {
     await this.nav.navigateRoot('/tabs/mascotas', { animationDirection: 'back' });
   }
 
+  /** Abre el detalle del evento, con las opciones de editarlo o eliminarlo. */
+  protected verEvento(eventoId: string): Promise<void> {
+    return this.detalleEvento.abrir(eventoId);
+  }
+
+  /** Atajo: deslizar el evento hacia la izquierda para eliminarlo. */
   protected async eliminarEvento(evento: EventoSalud, deslizable: IonItemSliding): Promise<void> {
     await deslizable.close();
-    const ok = await this.avisos.confirmar(
-      '¿Eliminar este evento?',
-      `${this.titulo(evento)} del historial. Si tenía un recordatorio, también se cancela.`,
-    );
-    if (!ok) return;
-    await this.datos.eliminarEvento(evento.id);
-    await this.avisos.mensaje('Evento eliminado.');
+    await this.detalleEvento.eliminar(evento.id);
   }
 
   /** Solo desarrollo: programa una notificación de prueba a 2 minutos (casos de prueba 1, 3, 4 y 5). */

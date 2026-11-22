@@ -40,7 +40,7 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF03 | Registrar eventos de salud (vacuna, desparasitación, cita, peso) con fecha y notas | Implementado | — |
 | RF04 | Historial de salud ordenado por fecha | Implementado | — |
 | RF13 | Registrar el peso y verlo como lista de controles | Implementado | — |
-| RF05 | Calendario precargado según especie y edad | En revisión ([PR #7](../../pull/7)) | [#3](../../issues/3) |
+| RF05 | Calendario precargado según especie y edad | Implementado | [#3](../../issues/3) |
 | RF06 | Recordatorios únicos o recurrentes | En desarrollo | [#1](../../issues/1) |
 | RF07 | Notificación local el día anterior | En desarrollo | [#2](../../issues/2) |
 | RF08 | Próximos recordatorios de todas las mascotas | En desarrollo | [#4](../../issues/4) |
@@ -55,9 +55,8 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 
 | RF | Qué falta | Issue |
 |---|---|---|
-| RF05 | Fusionar el calendario precargado, que está en revisión en el [PR #7](../../pull/7) | [#3](../../issues/3) |
 | RF06 | Reprogramar automáticamente la siguiente repetición cuando se cumple la fecha de un recordatorio recurrente | [#1](../../issues/1) |
-| RF07 | Programar la notificación de cada recordatorio para el día anterior a las 9:00 a. m. y cancelarla al editar o eliminar | [#2](../../issues/2) |
+| RF07 | Programar la notificación de cada recordatorio para el día anterior a las 9:00 a. m. | [#2](../../issues/2) |
 | RF08 | Mostrar las próximas repeticiones y los recordatorios vencidos, y permitir marcarlos como hechos | [#4](../../issues/4) |
 | RF10 | Tomar o adjuntar la foto del carné en Nuevo evento y verla en grande desde el historial | [#5](../../issues/5) |
 
@@ -95,10 +94,11 @@ Un punto (●) indica que el requerimiento se cumple o se inicia en esa pantalla
 |---|---|---|
 | P1 Mis mascotas | `/tabs/mascotas` | `src/app/pages/mis-mascotas/` |
 | P2 Perfil de mascota | `/mascota/:id` | `src/app/pages/perfil-mascota/` |
-| P3 Nuevo evento | `/mascota/:id/evento/nuevo` | `src/app/pages/nuevo-evento/` |
+| P3 Nuevo / editar evento | `/mascota/:id/evento/nuevo`, `/mascota/:id/evento/:eventoId/editar` | `src/app/pages/nuevo-evento/` |
 | P4 Nueva / editar mascota | `/mascota/nueva`, `/mascota/:id/editar` | `src/app/pages/mascota-form/` |
 | P5 Recordatorios | `/tabs/recordatorios` | `src/app/pages/recordatorios/` |
 | P6 Exportar historial | hoja inferior abierta desde P2 | `src/app/components/exportar-modal/` |
+| Detalle de evento o recordatorio | hoja inferior abierta desde P1, P2 y P5 | `src/app/components/detalle-evento/` |
 
 Al tocar una notificación se abre `/mascota/:id` con el `mascotaId` que viaja en `extra` (ver `NotificacionesService.iniciar`).
 
