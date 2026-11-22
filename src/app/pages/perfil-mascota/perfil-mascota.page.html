@@ -72,7 +72,29 @@
     </ion-card-content>
   </ion-card>
   }
+  <h3 class="hu-seccion">Calendario de salud</h3>
 
+  @if (calendario().length) {
+  <ion-list lines="none" class="hu-lista">
+    @for (evento of calendario(); track evento.id) {
+    <ion-item>
+      <div slot="start" class="hu-icono-tipo" [class]="tipos[evento.tipo].color">
+        <ion-icon [name]="tipos[evento.tipo].icono" aria-hidden="true"></ion-icon>
+      </div>
+
+      <ion-label class="ion-text-wrap">
+        <h3>{{ titulo(evento) }}</h3>
+        <p>{{ evento.fecha | date: "EEEE d 'de' MMMM y" }}</p>
+        @if (evento.notas) {
+        <p class="notas">{{ evento.notas }}</p>
+        }
+      </ion-label>
+    </ion-item>
+    }
+  </ion-list>
+  } @else {
+  <p class="hu-nota sin-datos">No hay vacunas ni desparasitaciones programadas.</p>
+  }
   <h3 class="hu-seccion">Próximo recordatorio</h3>
   @if (proximo(); as p) {
   <ion-list lines="none" class="hu-lista">
