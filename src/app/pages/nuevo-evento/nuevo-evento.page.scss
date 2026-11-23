@@ -120,3 +120,8 @@
   --background: var(--ion-background-color);
   padding: 8px 16px calc(8px + var(--ion-safe-area-bottom, 0px));
 }
+
+.foto-carne img {
+  border-radius: 8px;
+  object-fit: cover;
+}

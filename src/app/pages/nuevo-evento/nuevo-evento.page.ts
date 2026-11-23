@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import type { OnInit } from '@angular/core';
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -23,9 +23,10 @@ import {
   NavController,
 } from '@ionic/angular';
 
-import type { Recordatorio, TipoEvento } from '../../models';
+import type { EventoSalud, Recordatorio, TipoEvento } from '../../models';
 import { OPCIONES_REPETIR, ORDEN_TIPOS, TIPOS_EVENTO } from '../../models';
 import { AvisosService } from '../../services/avisos.service';
+import { FotoService } from '../../services/foto.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { NotificacionesService } from '../../services/notificaciones.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
@@ -63,6 +64,15 @@ import { admiteFechaFutura, reglasEvento } from '../../utils/validadores';
   ],
 })
 export class NuevoEventoPage implements OnInit {
+  private readonly fotos = inject(FotoService);
+  private readonly destruccion = inject(DestroyRef);
+  private fotoGuardada?: string;
+  private eventoOriginal?: EventoSalud;
+  private readonly fotoRuta = signal<string | undefined>(undefined);
+  protected readonly tieneFoto = computed(() => !!this.fotoRuta());
+  protected readonly fotoSrc = signal<string | undefined>(undefined);
+  protected readonly eligiendoFoto = signal(false);
+
   private readonly datos = inject(MascotasService);
   private readonly recordatorios = inject(RecordatoriosService);
   private readonly notificaciones = inject(NotificacionesService);
@@ -92,7 +102,15 @@ export class NuevoEventoPage implements OnInit {
       recordarme: [false],
       notas: ['', Validators.maxLength(300)],
     },
-    { validators: reglasEvento },
+    {
+      validators: (grupo) => {
+        const errores = reglasEvento(grupo);
+        if (errores?.['recordatorioSinFecha'] && this.mismaProgramacion(grupo.value)) {
+          delete errores['recordatorioSinFecha'];
+        }
+        return errores && Object.keys(errores).length ? errores : null;
+      },
+    },
   );
 
   private readonly valores = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
@@ -104,6 +122,7 @@ export class NuevoEventoPage implements OnInit {
   protected readonly fechaRecordatorio = computed(() => {
     const v = this.valores();
     if (!v.recordarme || !v.fecha) return undefined;
+    if (this.mismaProgramacion(v)) return this.eventoOriginal?.recordatorio?.fecha;
     return this.recordatorios.calcularProximaFecha(v.fecha, v.repetirCadaMeses || undefined);
   });
   protected readonly fechaAviso = computed(() => {
@@ -112,6 +131,10 @@ export class NuevoEventoPage implements OnInit {
   });
 
   ngOnInit(): void {
+    this.destruccion.onDestroy(() => {
+      const ruta = this.fotoRuta();
+      if (!this.guardando() && ruta && ruta !== this.fotoGuardada) void this.fotos.eliminar(ruta);
+    });
     const eventoId = this.eventoId();
     if (!eventoId) return;
     const evento = this.datos.obtenerEvento(eventoId);
@@ -120,6 +143,10 @@ export class NuevoEventoPage implements OnInit {
       this.nav.back();
       return;
     }
+    this.eventoOriginal = evento;
+    this.fotoGuardada = evento.fotoCarneUrl;
+    this.fotoRuta.set(this.fotoGuardada);
+    if (this.fotoGuardada) void this.cargarFoto(this.fotoGuardada);
     this.form.setValue({
       tipo: evento.tipo,
       fecha: evento.fecha,
@@ -128,6 +155,22 @@ export class NuevoEventoPage implements OnInit {
       recordarme: !!evento.recordatorio,
       notas: evento.notas ?? '',
     });
+  }
+
+  private mismaProgramacion(v: {
+    tipo?: TipoEvento;
+    fecha?: string;
+    recordarme?: boolean;
+    repetirCadaMeses?: number;
+  }): boolean {
+    const original = this.eventoOriginal;
+    return (
+      !!original &&
+      v.tipo === original.tipo &&
+      v.fecha === original.fecha &&
+      v.recordarme === !!original.recordatorio &&
+      v.repetirCadaMeses === (original.recordatorio?.repetirCadaMeses ?? 0)
+    );
   }
 
   protected elegirTipo(tipo: TipoEvento): void {
@@ -158,10 +201,43 @@ export class NuevoEventoPage implements OnInit {
     return this.avisos.proximamente('Agregar una jornada de vacunación con un toque', 'RF09');
   }
 
-  protected adjuntarFotoCarne(): Promise<void> {
-    // TODO(RF10): usar FotoService.tomarFoto('carne') para obtener la ruta, guardarla en un control
-    // `fotoCarneUrl` de este formulario, mostrar la miniatura aquí y enviarla en `agregarEvento`.
-    return this.avisos.mensaje('La foto del carné está en desarrollo (RF10).');
+  protected async adjuntarFotoCarne(): Promise<void> {
+    if (this.eligiendoFoto() || this.guardando()) return;
+    this.eligiendoFoto.set(true);
+    try {
+      const ruta = await this.fotos.tomarFoto('carne');
+      if (!ruta) return;
+      if (this.destruccion.destroyed) {
+        await this.fotos.eliminar(ruta);
+        return;
+      }
+      const anterior = this.fotoRuta();
+      this.fotoRuta.set(ruta);
+      this.fotoSrc.set(undefined);
+      if (anterior && anterior !== this.fotoGuardada) await this.fotos.eliminar(anterior);
+      await this.cargarFoto(ruta);
+    } finally {
+      this.eligiendoFoto.set(false);
+    }
+  }
+
+  protected async quitarFotoCarne(): Promise<void> {
+    if (this.eligiendoFoto() || this.guardando()) return;
+    const ruta = this.fotoRuta();
+    this.fotoRuta.set(undefined);
+    this.fotoSrc.set(undefined);
+    if (ruta && ruta !== this.fotoGuardada) await this.fotos.eliminar(ruta);
+  }
+
+  private async cargarFoto(ruta: string): Promise<void> {
+    try {
+      const src = await this.fotos.srcDe(ruta);
+      if (!this.destruccion.destroyed && this.fotoRuta() === ruta) this.fotoSrc.set(src);
+    } catch {
+      if (!this.destruccion.destroyed && this.fotoRuta() === ruta) {
+        await this.avisos.mensaje('No se pudo cargar la vista previa de la foto.', 'danger');
+      }
+    }
   }
 
   protected mostrarError(nombre: 'fechaFutura' | 'pesoInvalido' | 'recordatorioSinFecha'): boolean {
@@ -169,6 +245,7 @@ export class NuevoEventoPage implements OnInit {
   }
 
   protected async guardar(): Promise<void> {
+    if (this.guardando() || this.eligiendoFoto()) return;
     this.intentoGuardar.set(true);
     const mascota = this.mascota();
     if (!mascota) return;
@@ -181,8 +258,10 @@ export class NuevoEventoPage implements OnInit {
     try {
       const v = this.form.getRawValue();
       const fechaRecordatorio = this.fechaRecordatorio();
-      const recordatorio: Recordatorio | undefined =
-        v.recordarme && fechaRecordatorio
+      const conservarRecordatorio = this.mismaProgramacion(v);
+      const recordatorio: Recordatorio | undefined = conservarRecordatorio
+        ? this.datos.obtenerEvento(this.eventoId()!)?.recordatorio
+        : v.recordarme && fechaRecordatorio
           ? { fecha: fechaRecordatorio, repetirCadaMeses: v.repetirCadaMeses || undefined }
           : undefined;
       const datos = {
@@ -191,19 +270,27 @@ export class NuevoEventoPage implements OnInit {
         notas: v.notas,
         pesoKg: v.tipo === 'peso' ? Number(v.pesoKg) : undefined,
         recordatorio,
+        fotoCarneUrl: v.tipo === 'peso' ? this.fotoGuardada : this.fotoRuta(),
       };
       const eventoId = this.eventoId();
       let evento;
       if (eventoId) {
         // Al editar se cancela la notificación anterior y se vuelve a programar con los datos nuevos.
-        await this.notificaciones.cancelar([this.datos.obtenerEvento(eventoId)?.recordatorio?.notificacionId]);
+        if (!conservarRecordatorio) {
+          await this.notificaciones.cancelar([this.datos.obtenerEvento(eventoId)?.recordatorio?.notificacionId]);
+        }
         evento = await this.datos.actualizarEvento(eventoId, datos);
       } else {
         evento = await this.datos.agregarEvento({ mascotaId: mascota.id, ...datos });
       }
+      const anterior = this.fotoGuardada;
+      const borrador = this.fotoRuta();
+      this.fotoGuardada = evento.fotoCarneUrl;
+      this.fotoRuta.set(this.fotoGuardada);
+      if (anterior && anterior !== this.fotoGuardada) await this.fotos.eliminar(anterior);
+      if (borrador && borrador !== anterior && borrador !== this.fotoGuardada) await this.fotos.eliminar(borrador);
       let sinAviso = false;
-      if (recordatorio) {
-        // RF07: aviso el día anterior a las 9:00 a. m.; su id se guarda para cancelarlo al editar o eliminar.
+      if (recordatorio && !conservarRecordatorio) {
         const notificacionId = await this.notificaciones.programarRecordatorio(evento, mascota);
         if (notificacionId !== undefined) {
           await this.datos.actualizarEvento(evento.id, { recordatorio: { ...recordatorio, notificacionId } });

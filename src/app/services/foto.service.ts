@@ -67,25 +67,14 @@ export class FotoService {
 
   async eliminar(ruta?: string): Promise<void> {
     if (!ruta) return;
+    const src = this.cache.get(ruta);
+    if (src?.startsWith('blob:')) URL.revokeObjectURL(src);
     this.cache.delete(ruta);
     try {
       await Filesystem.deleteFile({ path: ruta, directory: Directory.Data });
     } catch {
       // Si el archivo ya no existe no hay nada que borrar.
     }
-  }
-
-  /**
-   * TODO(RF10): tomar o adjuntar la foto del carné físico o de una fórmula y asociarla a un evento.
-   * - Reutiliza `tomarFoto('carne')` para obtener la ruta.
-   * - Guárdala en `EventoSalud.fotoCarneUrl` con `MascotasService.actualizarEvento(eventoId, { fotoCarneUrl })`
-   *   (si el evento ya tenía foto, borra la anterior con `eliminar()`).
-   * - En P3 (NuevoEventoPage) conecta la zona "Foto del carné" para adjuntarla antes de guardar el evento,
-   *   y en P2 (PerfilMascotaPage) muestra un ícono en el historial y permite ver la foto en grande.
-   */
-  async adjuntarAEvento(eventoId: string): Promise<string | undefined> {
-    console.warn('[FotoService] TODO(RF10) adjuntarAEvento', eventoId);
-    return undefined;
   }
 
   private async elegirOrigen(): Promise<'camara' | 'galeria' | undefined> {
