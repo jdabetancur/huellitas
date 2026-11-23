@@ -83,6 +83,8 @@ export class NuevoEventoPage implements OnInit {
   readonly id = input.required<string>();
   /** Id del evento cuando se edita (ruta /mascota/:id/evento/:eventoId/editar). */
   readonly eventoId = input<string>();
+  /** Tipo con el que abre un evento nuevo, p. ej. /mascota/:id/evento/nuevo?tipoInicial=peso desde «Registrar peso». */
+  readonly tipoInicial = input<string>();
 
   protected readonly editando = computed(() => !!this.eventoId());
 
@@ -136,7 +138,11 @@ export class NuevoEventoPage implements OnInit {
       if (!this.guardando() && ruta && ruta !== this.fotoGuardada) void this.fotos.eliminar(ruta);
     });
     const eventoId = this.eventoId();
-    if (!eventoId) return;
+    if (!eventoId) {
+      const tipo = this.tipoInicial();
+      if (tipo && (ORDEN_TIPOS as string[]).includes(tipo)) this.elegirTipo(tipo as TipoEvento);
+      return;
+    }
     const evento = this.datos.obtenerEvento(eventoId);
     if (!evento || evento.mascotaId !== this.id()) {
       void this.avisos.mensaje('No encontramos ese evento.', 'danger');
