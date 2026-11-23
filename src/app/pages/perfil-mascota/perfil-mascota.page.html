@@ -29,10 +29,17 @@
   </section>
 
   <div class="datos">
-    <div class="dato">
+    <button
+      type="button"
+      class="dato dato-boton"
+      [routerLink]="['/mascota', m.id, 'evento', 'nuevo']"
+      [queryParams]="{ tipoInicial: 'peso' }"
+      routerDirection="forward"
+      aria-label="Registrar peso"
+    >
       <strong>{{ pesoActual() !== undefined ? (pesoActual() | number: '1.0-1') + ' kg' : '—' }}</strong>
       <span>Peso</span>
-    </div>
+    </button>
     <div class="dato">
       <strong>{{ vacunas() }}</strong>
       <span>Vacunas</span>
@@ -126,7 +133,19 @@
   <p class="hu-nota sin-datos">No hay recordatorios pendientes.</p>
   }
 
-  <h3 class="hu-seccion">Controles de peso</h3>
+  <div class="seccion-con-accion">
+    <h3 class="hu-seccion">Controles de peso</h3>
+    <ion-button
+      size="small"
+      fill="clear"
+      [routerLink]="['/mascota', m.id, 'evento', 'nuevo']"
+      [queryParams]="{ tipoInicial: 'peso' }"
+      routerDirection="forward"
+    >
+      <ion-icon slot="start" name="add" aria-hidden="true"></ion-icon>
+      Registrar peso
+    </ion-button>
+  </div>
   @if (pesos().length) {
   <ion-list lines="none" class="hu-lista">
     @for (p of pesos(); track p.id; let i = $index) {
@@ -148,7 +167,7 @@
     }
   </ion-list>
   } @else {
-  <p class="hu-nota sin-datos">Aún no hay controles de peso. Agrégalos con «+ Evento» › Peso.</p>
+  <p class="hu-nota sin-datos">Aún no hay controles de peso. Toca «Registrar peso» para agregar el primero.</p>
   }
 
   <h3 class="hu-seccion">Historial de salud</h3>

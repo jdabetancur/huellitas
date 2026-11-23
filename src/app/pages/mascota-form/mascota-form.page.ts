@@ -89,7 +89,11 @@ export class MascotaFormPage implements OnInit {
     sexo: ['macho' as Sexo, Validators.required],
     fechaNacimiento: ['', [Validators.required, noFutura]],
     fotoUrl: [''],
+    /** Peso actual (opcional). Se guarda como un control de peso (RF13), no dentro de la mascota. */
+    pesoKg: [null as number | null, [Validators.min(0.1), Validators.max(199)]],
   });
+  /** Peso que tenía la mascota al abrir el formulario de edición. */
+  private pesoOriginal?: number;
 
   private readonly valores = toSignal(this.form.valueChanges, {
     initialValue: this.form.getRawValue(),
@@ -121,7 +125,9 @@ export class MascotaFormPage implements OnInit {
     this.fotoOriginal = mascota.fotoUrl;
     this.mascotaOriginal = { ...mascota };
 
+    this.pesoOriginal = this.datos.pesoActual(mascota.id);
     this.form.setValue({
+      pesoKg: this.pesoOriginal ?? null,
       nombre: mascota.nombre,
       especie: mascota.especie,
       raza: mascota.raza,
@@ -159,6 +165,16 @@ export class MascotaFormPage implements OnInit {
     return control.touched && control.hasError(tipo);
   }
 
+  /**
+   * RF13: si se escribió un peso (y es distinto del actual al editar), se agrega un control de peso con
+   * la fecha de hoy. Así el historial de peso del perfil conserva los valores anteriores.
+   */
+  private async registrarPeso(mascotaId: string, pesoKg: number | string | null): Promise<void> {
+    const peso = pesoKg === null || pesoKg === '' ? NaN : Number(pesoKg);
+    if (!(peso > 0) || peso === this.pesoOriginal) return;
+    await this.datos.agregarEvento({ mascotaId, tipo: 'peso', fecha: hoyISO(), pesoKg: Math.round(peso * 10) / 10 });
+  }
+
   protected cambiarInclusion(index: number, incluir: boolean): void {
     this.propuestas.update((lista) => lista.map((evento, i) => (i === index ? { ...evento, incluir } : evento)));
   }
@@ -179,7 +195,7 @@ export class MascotaFormPage implements OnInit {
     this.guardando.set(true);
 
     try {
-      const valores = this.form.getRawValue();
+      const { pesoKg, ...valores } = this.form.getRawValue();
       const datos = {
         ...valores,
         fotoUrl: valores.fotoUrl || undefined,
@@ -189,6 +205,7 @@ export class MascotaFormPage implements OnInit {
 
       if (id) {
         const editada = await this.datos.editarMascota(id, datos);
+        await this.registrarPeso(id, pesoKg);
 
         if (this.fotoOriginal && this.fotoOriginal !== datos.fotoUrl) {
           await this.fotos.eliminar(this.fotoOriginal);
@@ -204,6 +221,7 @@ export class MascotaFormPage implements OnInit {
         return;
       }
       const mascota = await this.datos.crearMascota(datos);
+      await this.registrarPeso(mascota.id, pesoKg);
       const propuestas = await this.calendario.proponer(mascota);
 
       if (!propuestas.length) {
