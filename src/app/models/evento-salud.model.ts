@@ -10,6 +10,8 @@ export interface Recordatorio {
   fecha: string;
   repetirCadaMeses?: number;
   notificacionId?: number;
+  /** Repeticiones que vencieron antes de que el usuario las marcara como hechas. */
+  fechasVencidas?: string[];
 }
 
 /** Evento de salud de una mascota (RF03). El control de peso (RF13) es un evento de tipo 'peso'. */

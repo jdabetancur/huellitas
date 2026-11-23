@@ -42,8 +42,8 @@ export function sumarMeses(iso: string, meses: number): string {
 }
 
 /** Días desde hoy hasta la fecha (negativo si ya pasó). */
-export function diasHasta(iso: string): number {
-  const ms = desdeISO(iso).getTime() - desdeISO(hoyISO()).getTime();
+export function diasHasta(iso: string, referencia = hoyISO()): number {
+  const ms = desdeISO(iso).getTime() - desdeISO(referencia).getTime();
   return Math.round(ms / 86_400_000);
 }
 

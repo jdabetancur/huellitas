@@ -7,7 +7,7 @@ import { MascotasService } from '../../services/mascotas.service';
 import { cuandoTexto, hoyISO, sumarDias } from '../../utils/fechas';
 
 /** Acción elegida en la hoja de detalle. */
-export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
+export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
 
 /**
  * Hoja inferior con el detalle de un evento o recordatorio (se abre desde P1, P2 y P5).
@@ -50,12 +50,13 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
             <dt>Recordatorio</dt>
             @if (e.recordatorio; as r) {
               <dd>
-                {{ r.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(r.fecha) }}
+                {{ fechaRecordatorio || r.fecha | date: "EEEE d 'de' MMMM y" }} ·
+                {{ cuando(fechaRecordatorio || r.fecha) }}
                 <span class="hu-nota bloque">
                   {{ repeticion(r.repetirCadaMeses) }} ·
-                  @if (r.fecha <= hoy) {
+                  @if ((fechaRecordatorio || r.fecha) <= hoy) {
                     el aviso se envía el día anterior; para este ya pasó
-                  } @else if (r.notificacionId !== undefined) {
+                  } @else if (r.notificacionId !== undefined && (!fechaRecordatorio || fechaRecordatorio === r.fecha)) {
                     aviso el {{ aviso(r.fecha) | date: "d 'de' MMMM" }} a las 9:00 a. m.
                   } @else {
                     sin aviso en el celular (activa las notificaciones de Huellitas)
@@ -69,6 +70,12 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
         </dl>
 
         <div class="acciones">
+          @if (
+            fechaRecordatorio &&
+            (fechaRecordatorio === e.recordatorio?.fecha || e.recordatorio?.fechasVencidas?.includes(fechaRecordatorio))
+          ) {
+            <ion-button expand="block" fill="outline" (click)="cerrar('completar')"> Marcar como hecho </ion-button>
+          }
           <ion-button expand="block" (click)="cerrar('editar')">
             <ion-icon slot="start" name="create-outline" aria-hidden="true"></ion-icon>
             Editar
@@ -149,6 +156,7 @@ export class DetalleEventoComponent {
   }
   /** Muestra el botón "Ver perfil" (cuando se abre desde Recordatorios o Mis mascotas). */
   @Input() mostrarPerfil = false;
+  @Input() fechaRecordatorio?: string;
 
   protected readonly evento = computed(() => this.datos.obtenerEvento(this.id()));
   protected readonly mascota = computed(() => {

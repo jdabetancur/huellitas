@@ -37,22 +37,17 @@ export class RecordatoriosService {
   private iniciado = false;
   private enCurso?: Promise<number>;
 
-  /**
-   * Recordatorios desde hoy en adelante, del más cercano al más lejano.
-   * TODO(RF08): completar la vista única de próximos recordatorios:
-   * - Incluir las próximas repeticiones de los recurrentes (no solo la fecha guardada).
-   * - Mostrar los vencidos (fecha pasada y sin marcar como hechos) y permitir marcarlos como hechos.
-   * - Incluir las jornadas de vacunación cuando exista RF09 (Entrega 3).
-   */
-  readonly proximos = computed<ProximoRecordatorio[]>(() => {
+  private readonly completando = new Set<string>();
+
+  private readonly pendientes = computed<ProximoRecordatorio[]>(() => {
     const hoy = this.hoy();
     const mascotas = new Map(this.datos.mascotas().map((m) => [m.id, m]));
     return this.datos
       .eventos()
-      .filter((e) => e.recordatorio && e.recordatorio.fecha >= hoy && mascotas.has(e.mascotaId))
+      .filter((e) => e.recordatorio && mascotas.has(e.mascotaId))
       .map((evento) => {
         const fecha = evento.recordatorio!.fecha;
-        return { evento, mascota: mascotas.get(evento.mascotaId)!, fecha, dias: diasHasta(fecha) };
+        return { evento, mascota: mascotas.get(evento.mascotaId)!, fecha, dias: diasHasta(fecha, hoy) };
       })
       .sort((a, b) => a.fecha.localeCompare(b.fecha));
   });
@@ -72,6 +67,59 @@ export class RecordatoriosService {
       console.warn('[RF06] No se pudieron registrar los listeners', error);
     }
     await this.reprogramarRecurrentes();
+  }
+
+  readonly vencidos = computed(() =>
+    this.pendientes()
+      .flatMap((r) => [
+        ...(r.evento.recordatorio?.fechasVencidas ?? []).map((fecha) => ({ ...r, fecha, dias: diasHasta(fecha) })),
+        ...(r.dias < 0 ? [r] : []),
+      ])
+      .sort((a, b) => a.fecha.localeCompare(b.fecha)),
+  );
+
+  readonly proximos = computed(() =>
+    this.pendientes()
+      .flatMap((r) => {
+        if (r.dias >= 0) return [r];
+        const fecha = this.calcularProximaFecha(r.fecha, r.evento.recordatorio?.repetirCadaMeses);
+        return fecha ? [{ ...r, fecha, dias: diasHasta(fecha) }] : [];
+      })
+      .sort((a, b) => a.fecha.localeCompare(b.fecha)),
+  );
+
+  async marcarComoHecho(eventoId: string, fecha: string): Promise<boolean> {
+    const evento = this.datos.obtenerEvento(eventoId);
+    const actual = evento?.recordatorio;
+    if (!evento || !actual || this.completando.has(eventoId)) return false;
+    const vencidos = actual.fechasVencidas ?? [];
+    if (actual.fecha !== fecha && !vencidos.includes(fecha)) return false;
+
+    this.completando.add(eventoId);
+    try {
+      if (actual.fecha !== fecha) {
+        const fechasVencidas = vencidos.filter((vencida) => vencida !== fecha);
+        await this.datos.actualizarEvento(eventoId, { recordatorio: { ...actual, fechasVencidas } });
+        return true;
+      }
+      const meses = actual.repetirCadaMeses;
+      const siguiente = meses ? this.calcularProximaFecha(sumarMeses(fecha, meses), meses) : undefined;
+      const recordatorio = siguiente
+        ? { fecha: siguiente, repetirCadaMeses: meses, fechasVencidas: actual.fechasVencidas }
+        : undefined;
+      const actualizado = await this.datos.actualizarEvento(eventoId, { recordatorio });
+      await this.notificaciones.cancelar([actual.notificacionId]);
+      const mascota = this.datos.obtenerMascota(evento.mascotaId);
+      if (recordatorio && mascota) {
+        const notificacionId = await this.notificaciones.programarRecordatorio(actualizado, mascota);
+        if (notificacionId !== undefined && this.datos.obtenerEvento(eventoId)?.recordatorio?.fecha === siguiente) {
+          await this.datos.actualizarEvento(eventoId, { recordatorio: { ...recordatorio, notificacionId } });
+        }
+      }
+      return true;
+    } finally {
+      this.completando.delete(eventoId);
+    }
   }
 
   proximoDe(mascotaId: string): ProximoRecordatorio | undefined {
@@ -123,15 +171,21 @@ export class RecordatoriosService {
         if (!fecha) continue;
 
         await this.notificaciones.cancelar([anterior.notificacionId]);
-        const recordatorio: Recordatorio = { fecha, repetirCadaMeses: anterior.repetirCadaMeses };
+        if (this.completando.has(evento.id) || this.datos.obtenerEvento(evento.id)?.recordatorio !== anterior) continue;
+        const recordatorio: Recordatorio = {
+          fecha,
+          repetirCadaMeses: anterior.repetirCadaMeses,
+          fechasVencidas: [...(anterior.fechasVencidas ?? []), anterior.fecha],
+        };
         const actualizado = await this.datos.actualizarEvento(evento.id, { recordatorio });
         reprogramados++;
 
         const mascota = this.datos.obtenerMascota(evento.mascotaId);
         if (!mascota) continue;
         const notificacionId = await this.notificaciones.programarRecordatorio(actualizado, mascota);
-        if (notificacionId !== undefined) {
-          await this.datos.actualizarEvento(evento.id, { recordatorio: { ...recordatorio, notificacionId } });
+        const vigente = this.datos.obtenerEvento(evento.id)?.recordatorio;
+        if (notificacionId !== undefined && vigente?.fecha === fecha) {
+          await this.datos.actualizarEvento(evento.id, { recordatorio: { ...vigente, notificacionId } });
         }
       } catch (error) {
         // Un evento con problemas no debe impedir reprogramar los demás.
@@ -162,7 +216,12 @@ export class RecordatoriosService {
       try {
         const notificacionId = await this.notificaciones.programarRecordatorio(evento, mascota);
         if (notificacionId === undefined) continue;
-        await this.datos.actualizarEvento(evento.id, { recordatorio: { ...evento.recordatorio!, notificacionId } });
+        const vigente = this.datos.obtenerEvento(evento.id)?.recordatorio;
+        if (vigente?.fecha === evento.recordatorio?.fecha && vigente && vigente.notificacionId === undefined) {
+          await this.datos.actualizarEvento(evento.id, { recordatorio: { ...vigente, notificacionId } });
+        } else {
+          await this.notificaciones.cancelar([notificacionId]);
+        }
       } catch (error) {
         console.warn('[RF07] No se pudo programar el aviso', evento.id, error);
       }

@@ -13,7 +13,7 @@
   <p class="mes">{{ hoy | date: "MMMM 'de' y" }}</p>
 
   <ng-template #item let-r>
-    <ion-item button detail="true" (click)="verRecordatorio(r.evento.id)">
+    <ion-item button detail="true" (click)="verRecordatorio(r)">
       <div slot="start" class="fecha" [class.pronto]="r.dias <= 7">
         <strong>{{ r.fecha | date: 'd' }}</strong>
         <span>{{ r.fecha | date: 'MMM' }}</span>
@@ -25,6 +25,15 @@
       <ion-icon slot="end" name="notifications-outline" color="medium" aria-hidden="true"></ion-icon>
     </ion-item>
   </ng-template>
+
+  @if (vencidos().length) {
+  <h3 class="hu-seccion">Vencidos</h3>
+  <ion-list lines="none" class="hu-lista">
+    @for (r of vencidos(); track r.evento.id + r.fecha) {
+    <ng-container *ngTemplateOutlet="item; context: { $implicit: r }" />
+    }
+  </ion-list>
+  }
 
   <h3 class="hu-seccion">Esta semana</h3>
   @if (estaSemana().length) {
