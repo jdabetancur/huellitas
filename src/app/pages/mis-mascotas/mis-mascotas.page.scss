@@ -72,8 +72,7 @@
 }
 
 .ayuda {
-  text-align: center;
-  margin: 4px 24px 96px;
+  margin: -2px 20px 10px;
 }
 
 .error-carga {
@@ -83,4 +82,9 @@
   background: #fde8e6;
   color: var(--ion-color-danger-shade);
   font-size: 0.9rem;
+}
+
+/* Espacio al final para que el botón + no tape la última mascota. */
+.hu-lista {
+  padding-bottom: 88px;
 }

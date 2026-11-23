@@ -26,15 +26,18 @@
     <ion-card-content>
       <span class="etiqueta">Próximo recordatorio</span>
       <h2>{{ titulo(p.evento) }}</h2>
-      <p>{{ p.mascota.nombre }} · {{ p.fecha | date: "EEEE d 'de' MMMM" }}</p>
+      <p>{{ p.mascota.nombre }} · {{ p.fecha | date: patron(p.fecha) }}</p>
       <span class="cuando">{{ cuando(p.fecha) }}</span>
     </ion-card-content>
   </ion-card>
   }
 
   <h3 class="hu-seccion">Tus mascotas</h3>
-
-  @if (mascotas().length === 0) {
+  @if (mascotas().length > 0) {
+  <p class="hu-nota ayuda">
+    Toca una mascota para ver su perfil, o deslízala a la izquierda para editarla o eliminarla.
+  </p>
+  } @if (mascotas().length === 0) {
   <div class="hu-vacio">
     <ion-icon name="paw" aria-hidden="true"></ion-icon>
     <p>Aún no tienes mascotas registradas.<br />Toca + para agregar la primera.</p>
@@ -75,10 +78,6 @@
     </ion-item-sliding>
     }
   </ion-list>
-
-  @if (mascotas().length > 0) {
-  <p class="hu-nota ayuda">Desliza una mascota hacia la izquierda para editarla o eliminarla.</p>
-  }
 
   <ion-fab slot="fixed" vertical="bottom" horizontal="end">
     <ion-fab-button routerLink="/mascota/nueva" routerDirection="forward" aria-label="Agregar mascota">

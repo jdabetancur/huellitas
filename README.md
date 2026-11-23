@@ -93,35 +93,26 @@ Un punto (●) indica que el requerimiento se cumple o se inicia en esa pantalla
 
 Al tocar una notificación se abre `/mascota/:id` con el `mascotaId` que viaja en `extra` (ver `NotificacionesService.iniciar`).
 
-**Recordatorios recurrentes (RF06).** Un recordatorio sin `repetirCadaMeses` es único. Uno con `repetirCadaMeses` se repite: cuando su fecha ya pasó, `RecordatoriosService.reprogramarRecurrentes()` lo mueve a la siguiente repetición futura (p. ej. desparasitación del 10 de noviembre cada 3 meses → 10 de febrero), cancela la notificación anterior y programa la nueva con `NotificacionesService.programarRecordatorio` (RF07). Se ejecuta en segundo plano al abrir la app, al volver a ella y al recibir una notificación. Además, cada recordatorio recurrente deja programado desde el principio el aviso de su siguiente repetición (con el id `notificacionId + 1`), así el aviso llega aunque nadie abra la app después de la fecha. El evento original queda en el historial con su fecha; solo avanza el recordatorio. Pruebas: `src/app/services/recordatorios.service.spec.ts`.
-
-**Aviso el día anterior (RF07).** `NotificacionesService.programarRecordatorio` programa una notificación local para el día anterior al recordatorio a las 9:00 a. m. (hora del celular), con el título «Mañana: Vacuna de Toby» y la primera línea de las notas en el cuerpo; su id se guarda en `recordatorio.notificacionId` y se cancela al editar o eliminar el evento o la mascota. Reglas (`momentoAviso`):
-
-- Si las 9:00 a. m. del día anterior ya pasaron pero el recordatorio sigue siendo mañana (p. ej. se guarda a las 10 a. m. uno para mañana), el aviso sale en 1 minuto.
-- Un recordatorio de hoy o pasado no tiene aviso.
-- El permiso se pide al activar «Recordarme» (P3) o al guardar el calendario precargado (P4). Sin permiso, el recordatorio se guarda igual, sin aviso, y la hoja de detalle lo indica. Al abrir la app se programan los avisos que falten si el permiso ya está concedido (incluidos los datos de ejemplo).
-- Si Android no permite alarmas exactas, se avisa una vez por sesión y se ofrece abrir el ajuste «Alarmas y recordatorios».
-
-Pruebas: `src/app/services/notificaciones.service.spec.ts`.
-
 ## Estructura de carpetas
 
 ```
 src/app/
 ├── models/            Contrato de datos: Mascota, EventoSalud, Recordatorio y constantes
 ├── services/
-│   ├── mascotas.service.ts        Datos (Preferences + signals): mascotas, eventos y pesos
-│   ├── recordatorios.service.ts   Próximos recordatorios y cálculo de repeticiones (RF06, RF08)
-│   ├── notificaciones.service.ts  Notificaciones locales: permiso, programar, cancelar, prueba (RF07)
-│   ├── calendario.service.ts      Calendario precargado (RF05)
-│   ├── foto.service.ts            Cámara/galería y archivos de fotos (RF01, RF10)
-│   ├── avisos.service.ts          Mensajes, confirmaciones y avisos «Próximamente»
-│   └── datos-ejemplo.ts           Toby, Mishi y Lola (solo la primera vez)
+│   ├── mascotas.service.ts         Datos (Preferences + signals): mascotas, eventos y pesos
+│   ├── recordatorios.service.ts    Próximos y vencidos, repeticiones y «marcar como hecho» (RF06, RF08)
+│   ├── notificaciones.service.ts   Notificaciones locales: permiso, aviso del día anterior, cancelar (RF07)
+│   ├── calendario.service.ts       Calendario precargado (RF05), con plantillas-calendario.ts
+│   ├── foto.service.ts             Cámara/galería y archivos de fotos (RF01, RF10)
+│   ├── detalle-evento.service.ts   Abre el detalle de un evento y ejecuta editar, eliminar o marcar como hecho
+│   ├── avisos.service.ts           Mensajes, confirmaciones y avisos «Próximamente»
+│   └── datos-ejemplo.ts            Toby, Mishi y Lola (solo la primera vez)
 ├── pages/             P1 a P5
-├── components/        Avatar y P6 (modal de exportar)
+├── components/        Avatar, P6 (exportar) y detalle de evento
 ├── tabs/              Pestañas Mascotas y Recordatorios
 └── utils/             Fechas, validadores, ids e íconos
 android/               Proyecto nativo de Capacitor (permisos en app/src/main/AndroidManifest.xml)
+assets/                Imágenes fuente del ícono y la pantalla de carga
 ```
 
 ## Modelo de datos
