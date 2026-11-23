@@ -28,6 +28,11 @@ class DatosFalsos {
   }
 
   readonly obtenerEvento = (id: string) => this.eventos().find((evento) => evento.id === id);
+  readonly agregarEvento = vi.fn(async (datos: DatosEvento) => {
+    const nuevo: EventoSalud = { ...datos, id: `nuevo-${this.eventos().length}` };
+    this.eventos.update((lista) => [...lista, nuevo]);
+    return nuevo;
+  });
   readonly actualizarEvento = vi.fn(async (id: string, cambios: Partial<DatosEvento>) => {
     const editado = { ...this.eventos().find((e) => e.id === id)!, ...cambios, id };
     this.eventos.update((lista) => lista.map((e) => (e.id === id ? editado : e)));
@@ -129,6 +134,22 @@ describe('RecordatoriosService (RF06)', () => {
         fecha: '2027-02-10',
         notificacionId: 4321,
       });
+    });
+
+    it('marcar como hecho registra el evento en el historial con su fecha', async () => {
+      datos.eventos.set([evento('e1', { fecha: '2026-11-10', repetirCadaMeses: 3 })]);
+      await servicio.reprogramarRecurrentes();
+
+      // Repetición vencida: se registra con la fecha del recordatorio.
+      await servicio.marcarComoHecho('e1', '2026-11-10');
+      // Repetición futura marcada antes de tiempo: se registra con la fecha de hoy.
+      await servicio.marcarComoHecho('e1', '2027-02-10');
+
+      const hechos = datos.eventos().filter((e) => e.id.startsWith('nuevo-'));
+      expect(hechos.map((e) => [e.tipo, e.fecha, e.notas, e.recordatorio])).toEqual([
+        ['desparasitacion', '2026-11-10', 'Pipeta', undefined],
+        ['desparasitacion', '2026-11-22', 'Pipeta', undefined],
+      ]);
     });
 
     it('no toca recordatorios únicos, de hoy ni futuros', async () => {
