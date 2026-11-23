@@ -28,14 +28,17 @@ bootstrapApplication(AppComponent, {
     provideIonicAngular({ backButtonText: '', mode: 'md' }),
     provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
     // Antes de mostrar la primera pantalla: cargar los datos guardados y preparar las notificaciones.
-    // RF06: con los datos ya cargados, se reprograman los recordatorios recurrentes vencidos.
-    provideAppInitializer(() => {
-      const recordatorios = inject(RecordatoriosService);
-      return inject(MascotasService)
-        .iniciar()
-        .then(() => recordatorios.iniciar())
-        .catch((error: unknown) => console.warn('[Inicio] No se pudieron reprogramar los recordatorios', error));
-    }),
+    provideAppInitializer(() => inject(MascotasService).iniciar()),
     provideAppInitializer(() => inject(NotificacionesService).iniciar()),
+    // RF06 y RF07: con los datos ya cargados, se reprograman los recordatorios en segundo plano,
+    // sin demorar la primera pantalla (RNF03).
+    provideAppInitializer(() => {
+      const datos = inject(MascotasService);
+      const recordatorios = inject(RecordatoriosService);
+      void datos
+        .iniciar()
+        .then(() => (datos.errorCarga() ? undefined : recordatorios.iniciar()))
+        .catch((error: unknown) => console.warn('[RF06] No se pudieron reprogramar los recordatorios', error));
+    }),
   ],
 });

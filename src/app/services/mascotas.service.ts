@@ -28,15 +28,23 @@ export class MascotasService {
   private readonly _mascotas = signal<Mascota[]>([]);
   private readonly _eventos = signal<EventoSalud[]>([]);
   private carga?: Promise<void>;
+  /** true si no se pudieron leer los datos guardados. Mientras sea true no se guarda nada, para no borrarlos. */
+  readonly errorCarga = signal(false);
 
   /** Mascotas ordenadas por nombre. */
   readonly mascotas = computed(() => [...this._mascotas()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es')));
   /** Todos los eventos de todas las mascotas, sin orden. */
   readonly eventos = this._eventos.asReadonly();
 
-  /** Carga los datos guardados (y los de ejemplo la primera vez). Se llama al iniciar la app. */
+  /**
+   * Carga los datos guardados (y los de ejemplo la primera vez). Se llama al iniciar la app.
+   * No lanza errores: si la lectura falla, marca `errorCarga` y P1 muestra un aviso.
+   */
   iniciar(): Promise<void> {
-    this.carga ??= this.cargar();
+    this.carga ??= this.cargar().catch((error: unknown) => {
+      console.error('[Datos] No se pudieron cargar los datos guardados', error);
+      this.errorCarga.set(true);
+    });
     return this.carga;
   }
 
@@ -147,6 +155,9 @@ export class MascotasService {
   }
 
   private async guardar(): Promise<void> {
+    if (this.errorCarga()) {
+      throw new Error('No se guardan cambios porque los datos guardados no se pudieron leer.');
+    }
     await Promise.all([
       Preferences.set({ key: CLAVE_MASCOTAS, value: JSON.stringify(this._mascotas()) }),
       Preferences.set({ key: CLAVE_EVENTOS, value: JSON.stringify(this._eventos()) }),
