@@ -7,6 +7,7 @@ import { tituloEvento } from '../models';
 
 import { AvisosService } from './avisos.service';
 import { MascotasService } from './mascotas.service';
+import { RecordatoriosService } from './recordatorios.service';
 
 /** Abre el detalle de un evento o recordatorio y ejecuta la acción elegida (editar, eliminar o ver perfil). */
 @Injectable({ providedIn: 'root' })
@@ -16,10 +17,16 @@ export class DetalleEventoService {
   private readonly datos = inject(MascotasService);
   private readonly avisos = inject(AvisosService);
 
-  async abrir(eventoId: string, opciones: { mostrarPerfil?: boolean } = {}): Promise<void> {
+  private readonly recordatorios = inject(RecordatoriosService);
+
+  async abrir(eventoId: string, opciones: { mostrarPerfil?: boolean; fechaRecordatorio?: string } = {}): Promise<void> {
     const modal = await this.modales.create({
       component: DetalleEventoComponent,
-      componentProps: { eventoId, mostrarPerfil: opciones.mostrarPerfil ?? false },
+      componentProps: {
+        eventoId,
+        mostrarPerfil: opciones.mostrarPerfil ?? false,
+        fechaRecordatorio: opciones.fechaRecordatorio,
+      },
       breakpoints: [0, 0.75, 1],
       initialBreakpoint: 0.75,
       cssClass: 'hu-hoja',
@@ -33,7 +40,15 @@ export class DetalleEventoService {
       await this.nav.navigateForward(['/mascota', evento.mascotaId, 'evento', evento.id, 'editar']);
     } else if (accion === 'perfil') {
       await this.nav.navigateForward(['/mascota', evento.mascotaId]);
-    } else {
+    } else if (accion === 'completar' && opciones.fechaRecordatorio) {
+      try {
+        if (await this.recordatorios.marcarComoHecho(evento.id, opciones.fechaRecordatorio)) {
+          await this.avisos.mensaje('Recordatorio marcado como hecho.', 'success');
+        }
+      } catch {
+        await this.avisos.mensaje('No se pudo completar el recordatorio.', 'danger');
+      }
+    } else if (accion === 'eliminar') {
       await this.eliminar(evento.id);
     }
   }

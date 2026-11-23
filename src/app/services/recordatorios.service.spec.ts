@@ -27,6 +27,7 @@ class DatosFalsos {
     return this.mascotas().find((m) => m.id === id);
   }
 
+  readonly obtenerEvento = (id: string) => this.eventos().find((evento) => evento.id === id);
   readonly actualizarEvento = vi.fn(async (id: string, cambios: Partial<DatosEvento>) => {
     const editado = { ...this.eventos().find((e) => e.id === id)!, ...cambios, id };
     this.eventos.update((lista) => lista.map((e) => (e.id === id ? editado : e)));
@@ -98,6 +99,7 @@ describe('RecordatoriosService (RF06)', () => {
         fecha: '2027-02-10',
         repetirCadaMeses: 3,
         notificacionId: 4321,
+        fechasVencidas: ['2026-11-10'],
       });
       // El evento original sigue en el historial con su fecha.
       expect(datos.eventos()[0].fecha).toBe('2026-08-10');
@@ -109,7 +111,24 @@ describe('RecordatoriosService (RF06)', () => {
 
       await servicio.reprogramarRecurrentes();
 
-      expect(datos.eventos()[0].recordatorio).toEqual({ fecha: '2026-12-01', repetirCadaMeses: 1 });
+      expect(datos.eventos()[0].recordatorio).toEqual({
+        fecha: '2026-12-01',
+        repetirCadaMeses: 1,
+        fechasVencidas: ['2026-10-01'],
+      });
+    });
+
+    it('permite completar una repetición vencida sin cambiar el siguiente aviso', async () => {
+      datos.eventos.set([evento('e1', { fecha: '2026-11-10', repetirCadaMeses: 3 })]);
+      await servicio.reprogramarRecurrentes();
+
+      expect(servicio.vencidos().map((r) => r.fecha)).toEqual(['2026-11-10']);
+      await expect(servicio.marcarComoHecho('e1', '2026-11-10')).resolves.toBe(true);
+      expect(servicio.vencidos()).toEqual([]);
+      expect(datos.eventos()[0].recordatorio).toMatchObject({
+        fecha: '2027-02-10',
+        notificacionId: 4321,
+      });
     });
 
     it('no toca recordatorios únicos, de hoy ni futuros', async () => {
@@ -127,7 +146,7 @@ describe('RecordatoriosService (RF06)', () => {
 
     it('el recordatorio reprogramado aparece en los próximos', async () => {
       datos.eventos.set([evento('e1', { fecha: '2026-11-10', repetirCadaMeses: 3 })]);
-      expect(servicio.proximos()).toHaveLength(0);
+      expect(servicio.proximos().map((r) => r.fecha)).toEqual(['2027-02-10']);
 
       await servicio.reprogramarRecurrentes();
 

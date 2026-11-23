@@ -25,7 +25,6 @@ import { cuandoTexto } from '../../utils/fechas';
 
 /**
  * P5 · Recordatorios de todas las mascotas (RF06, RF07, RF08; jornadas RF09 en la Entrega 3).
- * TODO(RF08): completar según RecordatoriosService.proximos (recurrentes, vencidos, marcar como hecho).
  */
 @Component({
   selector: 'app-recordatorios',
@@ -55,6 +54,7 @@ export class RecordatoriosPage {
   private readonly nav = inject(NavController);
 
   protected readonly hoy = new Date();
+  protected readonly vencidos = this.recordatorios.vencidos;
   protected readonly estaSemana = computed(() => this.recordatorios.proximos().filter((r) => r.dias <= 7));
   protected readonly masAdelante = computed(() => this.recordatorios.proximos().filter((r) => r.dias > 7));
   protected readonly tipos = TIPOS_EVENTO;
@@ -86,8 +86,8 @@ export class RecordatoriosPage {
   }
 
   /** Muestra la información del recordatorio, con las opciones de editarlo, eliminarlo o ver el perfil. */
-  protected verRecordatorio(eventoId: string): Promise<void> {
-    return this.detalleEvento.abrir(eventoId, { mostrarPerfil: true });
+  protected verRecordatorio(r: ProximoRecordatorio): Promise<void> {
+    return this.detalleEvento.abrir(r.evento.id, { mostrarPerfil: true, fechaRecordatorio: r.fecha });
   }
 
   protected verJornadas(): Promise<void> {
