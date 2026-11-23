@@ -5,7 +5,7 @@ import { LocalNotifications } from '@capacitor/local-notifications';
 
 import type { EventoSalud, Mascota } from '../models';
 import { TIPOS_EVENTO } from '../models';
-import { aISO, desdeISO, sumarDias } from '../utils/fechas';
+import { aISO, desdeISO, sumarDias, sumarMeses } from '../utils/fechas';
 import { nuevoIdNotificacion } from '../utils/ids';
 
 import { AvisosService } from './avisos.service';
@@ -145,8 +145,12 @@ export class NotificacionesService {
     return id;
   }
 
+  /**
+   * Cancela notificaciones por id. Para cada id cancela también `id + 1`, que es el aviso de la siguiente
+   * repetición de un recordatorio recurrente (ver `programarRecordatorio`); si no existe, no pasa nada.
+   */
   async cancelar(ids: (number | undefined)[]): Promise<void> {
-    const validos = ids.filter((id): id is number => typeof id === 'number');
+    const validos = ids.filter((id): id is number => typeof id === 'number').flatMap((id) => [id, id + 1]);
     if (!validos.length) return;
     try {
       await LocalNotifications.cancel({ notifications: validos.map((id) => ({ id })) });
@@ -176,7 +180,10 @@ export class NotificacionesService {
    * `evento.recordatorio.notificacionId`.
    * No pide el permiso (eso lo hacen las pantallas, con contexto para el usuario): si no está concedido,
    * o el recordatorio ya no tiene aviso posible, devuelve undefined y el recordatorio se guarda sin aviso.
-   * Al editar o eliminar el evento, P3 y MascotasService cancelan la notificación con `cancelar()`.
+   * Si el recordatorio se repite, también deja programado (con id + 1) el aviso de la siguiente repetición:
+   * así, aunque nadie abra la app después de la fecha, el siguiente aviso llega igual (caso de prueba 6).
+   * Al abrir la app, RecordatoriosService.reprogramarRecurrentes() vuelve a dejar ambos al día.
+   * Al editar o eliminar el evento, P3 y MascotasService cancelan los dos con `cancelar()`.
    */
   async programarRecordatorio(evento: EventoSalud, mascota: Mascota): Promise<number | undefined> {
     const fecha = evento.recordatorio?.fecha;
@@ -187,7 +194,12 @@ export class NotificacionesService {
       const { display } = await LocalNotifications.checkPermissions();
       if (display !== 'granted') return undefined;
       const { titulo, cuerpo } = textoAviso(evento, mascota);
-      return await this.programar({ titulo, cuerpo, fecha: cuando, mascotaId: mascota.id, eventoId: evento.id });
+      const base = { titulo, cuerpo, mascotaId: mascota.id, eventoId: evento.id };
+      const id = await this.programar({ ...base, fecha: cuando });
+      const meses = evento.recordatorio?.repetirCadaMeses;
+      const siguiente = meses ? momentoAviso(sumarMeses(fecha, meses)) : undefined;
+      if (siguiente) await this.programar({ ...base, id: id + 1, fecha: siguiente });
+      return id;
     } catch (error) {
       console.warn('[Notificaciones] No se pudo programar el recordatorio', evento.id, error);
       return undefined;

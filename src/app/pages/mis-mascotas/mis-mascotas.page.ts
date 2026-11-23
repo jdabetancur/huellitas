@@ -72,6 +72,7 @@ export class MisMascotasPage {
   private readonly nav = inject(NavController);
 
   protected readonly mascotas = this.datos.mascotas;
+  protected readonly errorCarga = this.datos.errorCarga;
   protected readonly proximo = computed(() => this.recordatorios.proximos()[0]);
   protected readonly estaSemana = computed(() => this.recordatorios.proximos().filter((r) => r.dias <= 7).length);
   protected readonly especies = ESPECIES;

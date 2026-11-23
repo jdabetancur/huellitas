@@ -75,3 +75,12 @@
   text-align: center;
   margin: 4px 24px 96px;
 }
+
+.error-carga {
+  margin: 8px 16px 12px;
+  padding: 12px 14px;
+  border-radius: var(--hu-radio-control);
+  background: #fde8e6;
+  color: var(--ion-color-danger-shade);
+  font-size: 0.9rem;
+}

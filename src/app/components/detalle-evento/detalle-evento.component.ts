@@ -4,7 +4,7 @@ import { IonButton, IonContent, IonIcon, ModalController } from '@ionic/angular'
 
 import { OPCIONES_REPETIR, TIPOS_EVENTO, tituloEvento } from '../../models';
 import { MascotasService } from '../../services/mascotas.service';
-import { cuandoTexto, sumarDias } from '../../utils/fechas';
+import { cuandoTexto, hoyISO, sumarDias } from '../../utils/fechas';
 
 /** Acción elegida en la hoja de detalle. */
 export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
@@ -53,7 +53,9 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil';
                 {{ r.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(r.fecha) }}
                 <span class="hu-nota bloque">
                   {{ repeticion(r.repetirCadaMeses) }} ·
-                  @if (r.notificacionId !== undefined) {
+                  @if (r.fecha <= hoy) {
+                    el aviso se envía el día anterior; para este ya pasó
+                  } @else if (r.notificacionId !== undefined) {
                     aviso el {{ aviso(r.fecha) | date: "d 'de' MMMM" }} a las 9:00 a. m.
                   } @else {
                     sin aviso en el celular (activa las notificaciones de Huellitas)
@@ -156,6 +158,7 @@ export class DetalleEventoComponent {
   protected readonly tipos = TIPOS_EVENTO;
   protected readonly titulo = tituloEvento;
   protected readonly cuando = cuandoTexto;
+  protected readonly hoy = hoyISO();
 
   protected repeticion(meses?: number): string {
     return OPCIONES_REPETIR.find((o) => o.meses === meses && meses)?.etiqueta ?? 'Una vez';

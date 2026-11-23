@@ -10,6 +10,12 @@
 </ion-header>
 
 <ion-content>
+  @if (errorCarga()) {
+  <div class="error-carga" role="alert">
+    No pudimos leer los datos guardados en el celular. Cierra la app por completo y vuelve a abrirla. Mientras tanto no
+    se guardarán cambios, para no perder tu información.
+  </div>
+  }
   <p class="resumen">
     {{ mascotas().length }} {{ mascotas().length === 1 ? 'mascota' : 'mascotas' }} · {{ estaSemana() }} {{ estaSemana()
     === 1 ? 'recordatorio' : 'recordatorios' }} esta semana
