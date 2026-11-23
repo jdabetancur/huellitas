@@ -76,3 +76,12 @@ export function cuandoTexto(iso: string): string {
   if (dias === -1) return 'Ayer';
   return dias > 0 ? `En ${dias} días` : `Hace ${-dias} días`;
 }
+
+/**
+ * Patrón para el pipe `date`: «jueves 26 de noviembre» y, si la fecha no es de este año, «… de 2027».
+ * Con `conDia = false` omite el día de la semana: «26 de noviembre».
+ */
+export function patronFecha(iso: string | null | undefined, conDia = true): string {
+  const base = conDia ? "EEEE d 'de' MMMM" : "d 'de' MMMM";
+  return iso && iso.slice(0, 4) !== hoyISO().slice(0, 4) ? `${base} 'de' y` : base;
+}

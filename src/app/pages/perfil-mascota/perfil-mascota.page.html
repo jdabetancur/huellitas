@@ -91,7 +91,7 @@
         </div>
         <ion-label class="ion-text-wrap">
           <h3>{{ titulo(e) }}</h3>
-          <p>{{ e.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(e.fecha) }}</p>
+          <p>{{ e.fecha | date: patron(e.fecha) }} · {{ cuando(e.fecha) }}</p>
           @if (repeticion(e.recordatorio?.repetirCadaMeses); as rep) {
           <p class="recordatorio">
             <ion-icon name="notifications-outline" aria-hidden="true"></ion-icon>
@@ -123,7 +123,7 @@
       <ion-label>
         <h3>{{ titulo(p.evento) }}</h3>
         <p>
-          {{ p.fecha | date: "EEEE d 'de' MMMM" }} · {{ cuando(p.fecha) }} @if
+          {{ p.fecha | date: patron(p.fecha) }} · {{ cuando(p.fecha) }} @if
           (repeticion(p.evento.recordatorio?.repetirCadaMeses); as rep) { · {{ rep }} }
         </p>
       </ion-label>

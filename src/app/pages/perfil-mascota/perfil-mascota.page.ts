@@ -33,7 +33,7 @@ import { DetalleEventoService } from '../../services/detalle-evento.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { NotificacionesService } from '../../services/notificaciones.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
-import { cuandoTexto, edadTexto, hoyISO } from '../../utils/fechas';
+import { cuandoTexto, edadTexto, hoyISO, patronFecha } from '../../utils/fechas';
 
 /** P2 · Perfil de mascota (RF02 editar/eliminar, RF04 historial, RF08 próximo, RF11/RF12 exportar, RF13 peso). */
 @Component({
@@ -105,6 +105,7 @@ export class PerfilMascotaPage {
   protected readonly titulo = tituloEvento;
   protected readonly edad = edadTexto;
   protected readonly cuando = cuandoTexto;
+  protected readonly patron = patronFecha;
 
   protected repeticion(meses?: number): string | undefined {
     return OPCIONES_REPETIR.find((o) => o.meses === meses && meses)?.etiqueta;

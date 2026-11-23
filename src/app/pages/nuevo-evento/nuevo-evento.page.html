@@ -100,7 +100,7 @@
       </ion-toggle>
       @if (fechaAviso(); as aviso) {
       <p class="hu-nota resumen-aviso">
-        Te avisaremos el {{ aviso | date: "EEEE d 'de' MMMM" }} a las 9:00 a. m. @if (fechaRecordatorio() !==
+        Te avisaremos el {{ aviso | date: patron(aviso) }} a las 9:00 a. m. @if (fechaRecordatorio() !==
         form.controls.fecha.value) { (próxima repetición: {{ fechaRecordatorio() | date: 'd MMM y' }}) }
       </p>
       }

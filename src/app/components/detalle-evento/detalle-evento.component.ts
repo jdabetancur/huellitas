@@ -15,7 +15,7 @@ import {
 import { OPCIONES_REPETIR, TIPOS_EVENTO, tituloEvento } from '../../models';
 import { FotoService } from '../../services/foto.service';
 import { MascotasService } from '../../services/mascotas.service';
-import { cuandoTexto, hoyISO, sumarDias } from '../../utils/fechas';
+import { cuandoTexto, hoyISO, patronFecha, sumarDias } from '../../utils/fechas';
 
 /** Acción elegida en la hoja de detalle. */
 export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
@@ -54,7 +54,7 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
         <dl class="datos">
           <div>
             <dt>Fecha</dt>
-            <dd>{{ e.fecha | date: "EEEE d 'de' MMMM y" }} · {{ cuando(e.fecha) }}</dd>
+            <dd>{{ e.fecha | date: patron(e.fecha) }} · {{ cuando(e.fecha) }}</dd>
           </div>
           @if (e.tipo === 'peso') {
             <div>
@@ -72,14 +72,14 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
             <dt>Recordatorio</dt>
             @if (e.recordatorio; as r) {
               <dd>
-                {{ fechaRecordatorio || r.fecha | date: "EEEE d 'de' MMMM y" }} ·
+                {{ fechaRecordatorio || r.fecha | date: patron(fechaRecordatorio || r.fecha) }} ·
                 {{ cuando(fechaRecordatorio || r.fecha) }}
                 <span class="hu-nota bloque">
                   {{ repeticion(r.repetirCadaMeses) }} ·
                   @if ((fechaRecordatorio || r.fecha) <= hoy) {
                     el aviso se envía el día anterior; para este ya pasó
                   } @else if (r.notificacionId !== undefined && (!fechaRecordatorio || fechaRecordatorio === r.fecha)) {
-                    aviso el {{ aviso(r.fecha) | date: "d 'de' MMMM" }} a las 9:00 a. m.
+                    aviso el {{ aviso(r.fecha) | date: patron(aviso(r.fecha), false) }} a las 9:00 a. m.
                   } @else {
                     sin aviso en el celular (activa las notificaciones de Huellitas)
                   }
@@ -219,6 +219,7 @@ export class DetalleEventoComponent {
   protected readonly tipos = TIPOS_EVENTO;
   protected readonly titulo = tituloEvento;
   protected readonly cuando = cuandoTexto;
+  protected readonly patron = patronFecha;
   protected readonly hoy = hoyISO();
 
   protected readonly fotoSrc = signal<string | undefined>(undefined);

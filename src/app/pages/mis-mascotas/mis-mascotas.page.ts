@@ -32,7 +32,7 @@ import { DetalleEventoService } from '../../services/detalle-evento.service';
 import { MascotasService } from '../../services/mascotas.service';
 import type { ProximoRecordatorio } from '../../services/recordatorios.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
-import { cuandoTexto, edadTexto } from '../../utils/fechas';
+import { cuandoTexto, edadTexto, patronFecha } from '../../utils/fechas';
 
 /** P1 · Mis mascotas (RF02 listar/editar/eliminar, RF08 próximo recordatorio, RF12 importar CSV). */
 @Component({
@@ -79,6 +79,7 @@ export class MisMascotasPage {
   protected readonly titulo = tituloEvento;
   protected readonly edad = edadTexto;
   protected readonly cuando = cuandoTexto;
+  protected readonly patron = patronFecha;
 
   protected proximoDe(id: string): ProximoRecordatorio | undefined {
     return this.recordatorios.proximoDe(id);

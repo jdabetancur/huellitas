@@ -30,7 +30,7 @@ import { FotoService } from '../../services/foto.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { NotificacionesService } from '../../services/notificaciones.service';
 import { RecordatoriosService } from '../../services/recordatorios.service';
-import { hoyISO, sumarDias } from '../../utils/fechas';
+import { hoyISO, patronFecha, sumarDias } from '../../utils/fechas';
 import { admiteFechaFutura, reglasEvento } from '../../utils/validadores';
 
 /**
@@ -92,6 +92,7 @@ export class NuevoEventoPage implements OnInit {
   protected readonly ordenTipos = ORDEN_TIPOS;
   protected readonly tipos = TIPOS_EVENTO;
   protected readonly opcionesRepetir = OPCIONES_REPETIR;
+  protected readonly patron = patronFecha;
   protected readonly guardando = signal(false);
   protected readonly intentoGuardar = signal(false);
 
