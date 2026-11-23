@@ -1,8 +1,19 @@
 import { DatePipe, DecimalPipe } from '@angular/common';
-import { Component, Input, computed, inject, signal } from '@angular/core';
-import { IonButton, IonContent, IonIcon, ModalController } from '@ionic/angular';
+import { Component, Input, computed, effect, inject, signal } from '@angular/core';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonModal,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular';
 
 import { OPCIONES_REPETIR, TIPOS_EVENTO, tituloEvento } from '../../models';
+import { FotoService } from '../../services/foto.service';
 import { MascotasService } from '../../services/mascotas.service';
 import { cuandoTexto, hoyISO, sumarDias } from '../../utils/fechas';
 
@@ -15,7 +26,18 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
  */
 @Component({
   selector: 'app-detalle-evento',
-  imports: [DatePipe, DecimalPipe, IonContent, IonButton, IonIcon],
+  imports: [
+    DatePipe,
+    DecimalPipe,
+    IonContent,
+    IonButton,
+    IonButtons,
+    IonHeader,
+    IonIcon,
+    IonModal,
+    IonTitle,
+    IonToolbar,
+  ],
   template: `
     <ion-content class="ion-padding">
       @if (evento(); as e) {
@@ -68,6 +90,29 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
             }
           </div>
         </dl>
+
+        @if (e.fotoCarneUrl) {
+          @if (fotoSrc(); as src) {
+            <ion-button expand="block" fill="clear" (click)="fotoAbierta.set(true)">Ver foto del carné</ion-button>
+            <ion-modal [isOpen]="fotoAbierta()" (didDismiss)="fotoAbierta.set(false)">
+              <ng-template>
+                <ion-header>
+                  <ion-toolbar>
+                    <ion-title>Foto del carné</ion-title>
+                    <ion-buttons slot="end">
+                      <ion-button (click)="fotoAbierta.set(false)">Cerrar</ion-button>
+                    </ion-buttons>
+                  </ion-toolbar>
+                </ion-header>
+                <ion-content class="ion-padding">
+                  <img class="foto-completa" [src]="src" alt="Foto del carné o fórmula veterinaria" />
+                </ion-content>
+              </ng-template>
+            </ion-modal>
+          } @else if (fotoNoDisponible()) {
+            <p class="hu-nota">No se pudo cargar la foto del carné.</p>
+          }
+        }
 
         <div class="acciones">
           @if (
@@ -140,12 +185,20 @@ export type AccionDetalle = 'editar' | 'eliminar' | 'perfil' | 'completar';
     .bloque {
       display: block;
     }
+    .foto-completa {
+      display: block;
+      width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
     .acciones ion-button {
       margin: 0 0 8px;
     }
   `,
 })
 export class DetalleEventoComponent {
+  private readonly fotos = inject(FotoService);
   private readonly datos = inject(MascotasService);
   private readonly controladorModal = inject(ModalController);
 
@@ -167,6 +220,30 @@ export class DetalleEventoComponent {
   protected readonly titulo = tituloEvento;
   protected readonly cuando = cuandoTexto;
   protected readonly hoy = hoyISO();
+
+  protected readonly fotoSrc = signal<string | undefined>(undefined);
+  protected readonly fotoNoDisponible = signal(false);
+  protected readonly fotoAbierta = signal(false);
+
+  constructor() {
+    effect((limpiar) => {
+      const ruta = this.evento()?.fotoCarneUrl;
+      this.fotoSrc.set(undefined);
+      this.fotoNoDisponible.set(false);
+      if (!ruta) return;
+
+      let vigente = true;
+      limpiar(() => (vigente = false));
+      void this.fotos.srcDe(ruta).then(
+        (src) => {
+          if (vigente) this.fotoSrc.set(src);
+        },
+        () => {
+          if (vigente) this.fotoNoDisponible.set(true);
+        },
+      );
+    });
+  }
 
   protected repeticion(meses?: number): string {
     return OPCIONES_REPETIR.find((o) => o.meses === meses && meses)?.etiqueta ?? 'Una vez';

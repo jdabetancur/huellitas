@@ -122,14 +122,28 @@
     ></ion-textarea>
 
     @if (tipo() !== 'peso') {
-    <button type="button" class="foto-carne" (click)="adjuntarFotoCarne()">
+    <button type="button" class="foto-carne" (click)="adjuntarFotoCarne()" [disabled]="eligiendoFoto() || guardando()">
+      @if (fotoSrc(); as src) {
+      <img [src]="src" alt="Vista previa del carné" width="56" height="56" />
+      } @else {
       <ion-icon name="camera-outline" aria-hidden="true"></ion-icon>
+      }
       <span>
         <strong>Foto del carné</strong>
-        <small>Toma o adjunta una foto del carné o de una fórmula</small>
+        <small>{{ fotoSrc() ? 'Cambiar foto' : 'Toma o adjunta una foto del carné o de una fórmula' }}</small>
       </span>
     </button>
-    }
+    @if (tieneFoto()) {
+    <ion-button
+      type="button"
+      fill="clear"
+      color="danger"
+      (click)="quitarFotoCarne()"
+      [disabled]="eligiendoFoto() || guardando()"
+    >
+      Quitar foto
+    </ion-button>
+    } }
 
     <button type="submit" hidden aria-hidden="true" tabindex="-1"></button>
   </form>
@@ -143,7 +157,7 @@
 
 <ion-footer>
   <ion-toolbar class="pie">
-    <ion-button expand="block" (click)="guardar()" [disabled]="guardando() || !mascota()"
+    <ion-button expand="block" (click)="guardar()" [disabled]="guardando() || eligiendoFoto() || !mascota()"
       >{{ editando() ? 'Guardar cambios' : 'Guardar evento' }}</ion-button
     >
   </ion-toolbar>
