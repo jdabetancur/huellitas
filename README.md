@@ -43,22 +43,15 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF05 | Calendario precargado según especie y edad | Implementado | [#3](../../issues/3) |
 | RF06 | Recordatorios únicos o recurrentes | Implementado | [#1](../../issues/1) |
 | RF07 | Notificación local el día anterior | Implementado | [#2](../../issues/2) |
-| RF08 | Próximos recordatorios de todas las mascotas | En desarrollo | [#4](../../issues/4) |
-| RF10 | Foto del carné asociada a un evento | En desarrollo | [#5](../../issues/5) |
+| RF08 | Próximos recordatorios de todas las mascotas | Implementado | [#4](../../issues/4) |
+| RF10 | Foto del carné asociada a un evento | Implementado | [#5](../../issues/5) |
 | RF09 | Jornada de vacunación con un toque | Entrega 3 | — |
 | RF11 | Exportar historial en PDF | Entrega 3 | — |
 | RF12 | Exportar e importar perfil en CSV | Entrega 3 | — |
 
 ## Pendientes
 
-### En desarrollo (Entrega 2)
-
-| RF | Qué falta | Issue |
-|---|---|---|
-| RF08 | Mostrar las próximas repeticiones y los recordatorios vencidos, y permitir marcarlos como hechos | [#4](../../issues/4) |
-| RF10 | Tomar o adjuntar la foto del carné en Nuevo evento y verla en grande desde el historial | [#5](../../issues/5) |
-
-### Entrega 3
+Los 10 requerimientos de la Entrega 2 están implementados. Quedan para la Entrega 3:
 
 | RF | Qué falta |
 |---|---|
@@ -66,7 +59,7 @@ La primera vez que se abre, la app carga datos de ejemplo (Toby, Mishi y Lola). 
 | RF11 | Exportar el historial de una mascota en PDF para compartirlo con el veterinario |
 | RF12 | Exportar e importar el perfil completo de una mascota en CSV |
 
-Busca `TODO(RFxx)` en el código para ver exactamente qué falta de cada requerimiento.
+En el código, los comentarios `Entrega 3 · RFxx` marcan dónde va cada uno.
 
 ## Requerimientos por pantalla
 

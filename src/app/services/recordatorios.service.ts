@@ -88,6 +88,11 @@ export class RecordatoriosService {
       .sort((a, b) => a.fecha.localeCompare(b.fecha)),
   );
 
+  /**
+   * RF08: marca como hecha una repetición (vencida o la actual) de un recordatorio.
+   * Además registra en el historial (RF04) un evento del mismo tipo con la fecha en que se hizo:
+   * la del recordatorio si ya pasó (se hizo a tiempo y se marcó después) o hoy si se adelantó.
+   */
   async marcarComoHecho(eventoId: string, fecha: string): Promise<boolean> {
     const evento = this.datos.obtenerEvento(eventoId);
     const actual = evento?.recordatorio;
@@ -97,6 +102,7 @@ export class RecordatoriosService {
 
     this.completando.add(eventoId);
     try {
+      await this.registrarHecho(evento, fecha);
       if (actual.fecha !== fecha) {
         const fechasVencidas = vencidos.filter((vencida) => vencida !== fecha);
         await this.datos.actualizarEvento(eventoId, { recordatorio: { ...actual, fechasVencidas } });
@@ -120,6 +126,18 @@ export class RecordatoriosService {
     } finally {
       this.completando.delete(eventoId);
     }
+  }
+
+  /** Agrega al historial el evento hecho, sin recordatorio, con la fecha en que se hizo. */
+  private async registrarHecho(evento: EventoSalud, fechaRecordatorio: string): Promise<void> {
+    const hoy = hoyISO();
+    await this.datos.agregarEvento({
+      mascotaId: evento.mascotaId,
+      tipo: evento.tipo,
+      fecha: fechaRecordatorio < hoy ? fechaRecordatorio : hoy,
+      notas: evento.notas,
+      pesoKg: evento.tipo === 'peso' ? evento.pesoKg : undefined,
+    });
   }
 
   proximoDe(mascotaId: string): ProximoRecordatorio | undefined {
@@ -170,8 +188,9 @@ export class RecordatoriosService {
         const fecha = this.calcularProximaFecha(anterior.fecha, anterior.repetirCadaMeses);
         if (!fecha) continue;
 
-        await this.notificaciones.cancelar([anterior.notificacionId]);
+        // Si mientras tanto se marcó como hecho o se editó, no se toca (ni se cancela su aviso).
         if (this.completando.has(evento.id) || this.datos.obtenerEvento(evento.id)?.recordatorio !== anterior) continue;
+        await this.notificaciones.cancelar([anterior.notificacionId]);
         const recordatorio: Recordatorio = {
           fecha,
           repetirCadaMeses: anterior.repetirCadaMeses,
